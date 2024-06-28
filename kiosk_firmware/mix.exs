@@ -72,9 +72,14 @@ defmodule Kiosk.MixProject do
       {:nerves_system_x86_64, "~> 1.24", runtime: false, targets: :x86_64},
       {:nerves_system_grisp2, "~> 0.8", runtime: false, targets: :grisp2},
       {:nerves_system_mangopi_mq_pro, "~> 0.6", runtime: false, targets: :mangopi_mq_pro},
-      {:frio_rpi4, path: "../../frio_rpi4", runtime: false, nerves: [compile: true]},
+      {:frio_rpi4,
+       path: "../../frio_rpi4", runtime: false, nerves: [compile: true], targets: :frio_rpi4},
       {:muontrap, "~> 1.5"},
-      {:nerves_hub_link, "~> 2.4"},
+      # {:nerves_hub_link, "~> 2.4"},
+      {:nerves_hub_link, github: "lawik/nerves_hub_link", branch: "host-dev-mode"},
+      {:phoenix_live_reload, "~> 1.2", only: :dev, targets: :host},
+      #{:nerves_hub_link, path: "../../nerves_hub_link"},
+      {:nerves_time, "~> 0.4.8"},
       {:kiosk_ui, path: "../kiosk_ui"}
     ]
   end
@@ -93,10 +98,10 @@ defmodule Kiosk.MixProject do
 
   defp aliases do
     [
-#      setup: ["deps.get", "ecto.setup", "assets.setup", "assets.build"],
-#      "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
-#      "ecto.reset": ["ecto.drop", "ecto.setup"],
-#      test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
+      #      setup: ["deps.get", "ecto.setup", "assets.setup", "assets.build"],
+      #      "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
+      #      "ecto.reset": ["ecto.drop", "ecto.setup"],
+      #      test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
       "assets.setup": ["tailwind.install --if-missing", "esbuild.install --if-missing"],
       "assets.build": ["tailwind kiosk_ui", "esbuild kiosk_ui"],
       "assets.deploy": [
@@ -104,7 +109,7 @@ defmodule Kiosk.MixProject do
         "esbuild kiosk_ui --minify",
         "phx.digest"
       ],
-      "firmware": [
+      firmware: [
         "assets.deploy",
         "firmware"
       ]

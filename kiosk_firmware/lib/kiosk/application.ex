@@ -16,7 +16,7 @@ defmodule Kiosk.Application do
 
     children =
       [
-        {Kiosk, dir: "/data", starting_page: "http://#{host}:#{port}"},
+        {Kiosk, dir: "/data", starting_page: "http://#{host}:#{port}"}
       ] ++ children(target())
 
     Supervisor.start_link(children, opts)

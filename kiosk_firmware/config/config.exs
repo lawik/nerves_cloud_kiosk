@@ -37,7 +37,6 @@ config :tailwind,
     cd: Path.expand("../../kiosk_ui/assets", __DIR__)
   ]
 
-
 # Set the SOURCE_DATE_EPOCH date for reproducible builds.
 # See https://reproducible-builds.org/docs/source-date-epoch/ for more information
 

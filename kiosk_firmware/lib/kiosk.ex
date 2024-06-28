@@ -1,14 +1,13 @@
 defmodule Kiosk do
   @moduledoc false
-  use Supervisor
-
-  @on_device? (Mix.target != :host)
-
-  def start_link(opts) do
-    Supervisor.start_link(__MODULE__, opts, name: __MODULE__)
-  end
-
+  @on_device? Mix.target() != :host
   if @on_device? do
+    use Supervisor
+
+    def start_link(opts) do
+      Supervisor.start_link(__MODULE__, opts, name: __MODULE__)
+    end
+
     def init(opts) do
       setup_xdg_runtime_dir(opts[:dir])
       setup_udev()
@@ -26,11 +25,11 @@ defmodule Kiosk do
     def seatd do
       Supervisor.child_spec(
         {MuonTrap.Daemon,
-        [
-          "seatd",
-          [],
-          []
-        ]},
+         [
+           "seatd",
+           [],
+           []
+         ]},
         id: Monitor.OS.Kiosk.Seatd,
         restart: :permanent
       )
@@ -39,11 +38,11 @@ defmodule Kiosk do
     def weston(dir) do
       Supervisor.child_spec(
         {MuonTrap.Daemon,
-        [
-          "weston",
-          ["-B", "drm", "--config=/etc/weston.ini"],
-          [env: [{"XDG_RUNTIME_DIR", "#{dir}/nerves_weston"}]]
-        ]},
+         [
+           "weston",
+           ["-B", "drm", "--config=/etc/weston.ini"],
+           [env: [{"XDG_RUNTIME_DIR", "#{dir}/nerves_weston"}]]
+         ]},
         id: Monitor.OS.Kiosk.Weston,
         restart: :permanent
       )
@@ -88,6 +87,12 @@ defmodule Kiosk do
       :os.cmd(~c"modprobe vc4")
     end
   else
+    use GenServer
+
+    def start_link(opts) do
+      GenServer.start_link(__MODULE__, opts, name: __MODULE__)
+    end
+
     def init(opts) do
       {:ok, opts}
     end

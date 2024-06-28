@@ -57,19 +57,20 @@ config :vintage_net,
        type: VintageNetEthernet,
        ipv4: %{method: :dhcp}
      }},
-    {"wlan0", %{type: VintageNetWiFi,
-        vintage_net_wifi: %{
-          networks: [
-            %{
-              key_mgmt: :wpa_psk,
-              ssid: "Kontoret",
-              psk: "underjord",
-            }
-          ]
-        },
-        ipv4: %{method: :dhcp},
-      }
-    }
+    {"wlan0",
+     %{
+       type: VintageNetWiFi,
+       vintage_net_wifi: %{
+         networks: [
+           %{
+             key_mgmt: :wpa_psk,
+             ssid: System.get_env("NERVES_SSID"),
+             psk: System.get_env("NERVES_PSK")
+           }
+         ]
+       },
+       ipv4: %{method: :dhcp}
+     }}
   ]
 
 config :mdns_lite,
@@ -109,9 +110,9 @@ config :kiosk_ui, KioskUiWeb.Endpoint,
   url: [host: "localhost"],
   http: [port: 80],
   cache_static_manifest: "priv/static/cache_manifest.json",
-  #TODO: should not be static
+  # TODO: should not be static
   secret_key_base: "HEY05EB1dFVSu6KykKHuS4rQPQzSHv4F7mGVB/gnDLrIu75wE/ytBXy2TaL3A6RA",
-  #TODO: should not be static
+  # TODO: should not be static
   live_view: [signing_salt: "AAAABjEyERMkxgDh"],
   check_origin: false,
   render_errors: [view: KioskUIWeb.ErrorView, accepts: ~w(html json), layout: false],
@@ -127,8 +128,8 @@ config :phoenix, :json_library, Jason
 config :nerves_hub_link,
   device_api_host: "devices.nervescloud.com",
   shared_secret: [
-    product_key: "nhp_GViUOd1NC9ZuyoF3LB6NrOO3i1aJsfe4tj0XWOV/SUY",
-    product_secret: "V7qpWOIe+bS8/lHu856NaHJCNvboy6wqfg+vDlN7t9w",
+    product_key: System.get_env("NERVES_HUB_KEY"),
+    product_secret: System.get_env("NERVES_HUB_SECRET")
   ]
 
 # Import target specific config. This must remain at the bottom

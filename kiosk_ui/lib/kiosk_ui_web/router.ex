@@ -17,7 +17,7 @@ defmodule KioskUiWeb.Router do
   scope "/", KioskUiWeb do
     pipe_through :browser
 
-    get "/", PageController, :home
+    live "/", OnboardLive, :home
   end
 
   # Other scopes may use custom stacks.
