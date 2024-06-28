@@ -28,7 +28,6 @@ config :kiosk_ui, KioskUiWeb.Endpoint,
   url: [host: "localhost"],
   adapter: Bandit.PhoenixAdapter,
   http: [port: 4002],
-  cache_static_manifest: "priv/static/cache_manifest.json",
   secret_key_base: "HEY05EB1dFVSu6KykKHuS4rQPQzSHv4F7mGVB/gnDLrIu75wE/ytBXy2TaL3A6RA",
   live_view: [signing_salt: "AAAABjEyERMkxgDh"],
   check_origin: false,
@@ -39,7 +38,18 @@ config :kiosk_ui, KioskUiWeb.Endpoint,
   watchers: [
     esbuild: {Esbuild, :install_and_run, [:kiosk_ui, ~w(--sourcemap=inline --watch)]},
     tailwind: {Tailwind, :install_and_run, [:kiosk_ui, ~w(--watch)]}
+  ],
+  reloadable_apps: [:kiosk_ui],
+  # Watch static and templates for browser reloading.
+  live_reload: [
+    patterns: [
+      ~r"priv/static/(?!uploads/).*(js|css|png|jpeg|jpg|gif|svg)$",
+      ~r"priv/gettext/.*(po)$",
+      ~r"lib/kiosk_ui_web/(controllers|live|components)/.*(ex|heex)$"
+    ]
   ]
+
+config :phoenix_live_reload, dirs: [Path.expand("../kiosk_ui")]
 
 # Do not include metadata nor timestamps in development logs
 config :logger, :console, format: "[$level] $message\n"
@@ -54,19 +64,8 @@ config :phoenix, :plug_init_mode, :runtime
 # Include HEEx debug annotations as HTML comments in rendered markup
 config :phoenix_live_view, :debug_heex_annotations, true
 
-# Watch static and templates for browser reloading.
-config :kiosk_ui, KioskUiWeb.Endpoint,
-  live_reload: [
-    patterns: [
-      ~r"../kiosk_ui/priv/static/(?!uploads/).*(js|css|png|jpeg|jpg|gif|svg)$",
-      ~r"../kiosk_ui/priv/gettext/.*(po)$",
-      ~r"../kiosk_ui/lib/kiosk_ui_web/(controllers|live|components)/.*(ex|heex)$"
-    ]
-  ]
-
 # Enable dev routes for dashboard and mailbox
 config :kiosk_ui, dev_routes: true
-
 
 config :nerves_hub_link,
   device_api_host: "devices.nervescloud.com",
