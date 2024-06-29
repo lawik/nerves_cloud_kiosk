@@ -71,9 +71,9 @@ config :nerves_hub_link,
   device_api_host: "devices.nervescloud.com",
   shared_secret: [
     product_key: System.get_env("NERVES_HUB_KEY"),
-    product_secret: System.get_env("NERVES_HUB_SECRET")
-  ],
-  serial_number: System.fetch_env!("NERVES_SERIAL_NUMBER")
+    product_secret: System.get_env("NERVES_HUB_SECRET"),
+    identifier: System.fetch_env!("NERVES_SERIAL_NUMBER")
+  ]
 
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
