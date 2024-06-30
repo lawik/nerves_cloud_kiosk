@@ -12,7 +12,6 @@ config :nerves_runtime,
        # https://hexdocs.pm/nerves_runtime/readme.html#using-nerves_runtime-in-tests
        # https://hexdocs.pm/nerves_runtime/readme.html#nerves-system-and-firmware-metadata
        "a.nerves_fw_uuid" => "5cb84916-4c7c-55e9-2d20-e32ec6ba0b13",
-       "a.nerves_fw_product" => System.fetch_env!("NERVES_PRODUCT_NAME"),
        "nerves_fw_active" => "a",
        "nerves_fw_devpath" => "_build/fwup.tmpfile",
        "a.nerves_fw_architecture" => "generic",
