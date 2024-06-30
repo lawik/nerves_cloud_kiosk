@@ -2,12 +2,16 @@ defmodule KioskUiWeb.OnboardLive do
   use KioskUiWeb, :live_view
 
   def mount(_, _, socket) do
-    socket =
-      socket
-      |> assign_connection()
+    if connected?(socket) do
+      socket =
+        socket
+        |> assign_connection()
 
-    check_connection()
-    {:ok, socket}
+      check_connection()
+      {:ok, socket}
+    else
+      {:ok, socket}
+    end
   end
 
   def render(assigns) do

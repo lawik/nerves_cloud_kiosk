@@ -18,7 +18,7 @@ config :nerves_runtime,
        "a.nerves_fw_description" => "N/A",
        "a.nerves_fw_platform" => "host",
        "a.nerves_fw_version" => "0.0.0",
-       "nerves_serial_number" => System.fetch_env!("NERVES_SERIAL_NUMBER")
+       "nerves_serial_number" => System.get_env("NERVES_SERIAL_NUMBER")
      }}
 
 config :nerves_time, :servers, []
@@ -68,10 +68,12 @@ config :kiosk_ui, dev_routes: true
 
 config :nerves_hub_link,
   device_api_host: "devices.nervescloud.com",
+  remote_iex: true,
+  connect: false,
   shared_secret: [
     product_key: System.get_env("NERVES_HUB_KEY"),
     product_secret: System.get_env("NERVES_HUB_SECRET"),
-    identifier: System.fetch_env!("NERVES_SERIAL_NUMBER")
+    identifier: System.get_env("NERVES_SERIAL_NUMBER")
   ]
 
 # Use Jason for JSON parsing in Phoenix

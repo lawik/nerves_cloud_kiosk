@@ -75,7 +75,7 @@ defmodule Kiosk.MixProject do
       {:frio_rpi4,
        path: "../../frio_rpi4", runtime: false, nerves: [compile: true], targets: :frio_rpi4},
       {:muontrap, "~> 1.5"},
-      {:nerves_hub_link, "~> 2.4"},
+      {:nerves_hub_link, "~> 2.4", runtime: false},
       # {:nerves_hub_link, github: "lawik/nerves_hub_link", branch: "host-dev-mode"},
       {:phoenix_live_reload, "~> 1.2", only: :dev, targets: :host},
       # {:nerves_hub_link, path: "../../nerves_hub_link"},
