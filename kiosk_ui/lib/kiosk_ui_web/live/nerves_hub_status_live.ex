@@ -12,33 +12,103 @@ defmodule KioskUiWeb.NervesHubStatusLive do
   """
   def mount(_, _, socket) do
     socket =
-      socket
-      |> assign_info()
+      if connected?(socket) do
+        Phoenix.PubSub.subscribe(KioskUi.PubSub, "nerves_hub_manager")
 
-    refresh(socket)
+        socket =
+          socket
+          |> assign_info_blank()
+          |> assign_info()
+
+        refresh(socket)
+        socket
+      else
+        assign_info_blank(socket)
+      end
 
     {:ok, socket}
   end
 
-  defp handle_info(:update_status, socket) do
+  def handle_info(:update_status, socket) do
     socket = assign_info(socket)
 
     refresh(socket)
     {:noreply, socket}
   end
 
-  defp assign_info(socket) do
+  def handle_info({:link, status}, socket) do
+    dbg(status)
+
+    socket =
+      socket
+      |> assign_link_status()
+      |> assign_info()
+
+    {:noreply, socket}
+  end
+
+  defp assign_link_status(socket) do
+    socket
+    |> assign(link_status: KioskCommon.NervesHubManager.status())
+  end
+
+  defp assign_info_blank(socket) do
     socket
     |> assign(
-      status: NervesHubLink.status(),
-      # status: {:fwup_error, "There was a problem updating this device."},
-      # status: {:updating, 33},
-      # status: :update_rescheduled,
-      connected?: NervesHubLink.connected?(),
-      # connected?: false,
-      # console_active?: NervesHubLink.console_active?(),
-      console_active?: true
+      link_status: KioskCommon.NervesHubManager.status(),
+      status: :idle,
+      connected?: false,
+      console_active?: false
     )
+  end
+
+  defp assign_info(socket) do
+    if socket.assigns.link_status.started? do
+      socket
+      |> assign(
+        status: nerves_hub_link_status(),
+        # status: :idle,
+        # status: {:fwup_error, "There was a problem updating this device."},
+        # status: {:updating, 33},
+        # status: :update_rescheduled,
+        connected?: nerves_hub_link_connected?(),
+        # connected?: false,
+        # console_active?: NervesHubLink.console_active?(),
+        console_active?: nerves_hub_link_console_active?()
+      )
+    else
+      socket
+    end
+  catch
+    _, _ ->
+      socket
+  end
+
+  defp nerves_hub_link_status() do
+    try do
+      NervesHubLink.status()
+    catch
+      _, _ ->
+        :idle
+    end
+  end
+
+  defp nerves_hub_link_connected?() do
+    try do
+      NervesHubLink.connected?()
+    catch
+      _, _ ->
+        false
+    end
+  end
+
+  defp nerves_hub_link_console_active?() do
+    try do
+      NervesHubLink.console_active?()
+    catch
+      _, _ ->
+        false
+    end
   end
 
   defp refresh(%{assigns: %{connected?: connected?, status: status}}) do
@@ -76,7 +146,7 @@ defmodule KioskUiWeb.NervesHubStatusLive do
 
       <% end %>
 
-      <div :if={not @connected?}>
+      <div :if={@status != :blank and not @connected?}>
         <div class="rounded-full bg-slate-300 p-4 px-8">This device is not connected to the server.</div>
       </div>
 

@@ -10,17 +10,36 @@ defmodule KioskUiWeb.OnboardLive do
       check_connection()
       {:ok, socket}
     else
-      {:ok, socket}
+      {:ok, assign_connection(socket)}
     end
   end
 
   def render(assigns) do
     ~H"""
-    <h2 class="bold text-xl mb-8">NervesHubLink status</h2>
 
-    <div :if={@connected?} class="px-4 py-2 rounded-full bg-slate-300">Connected</div>
-    <div :if={!@connected?} class="px-4 py-2 rounded-full bg-slate-300">Not connected</div>
+
+    <div :if={@network_up? and @link_set_up?} class="px-4 py-2 rounded-full bg-slate-300">The link to NervesHub has been set up.</div>
+    <div :if={@network_up? and not @link_set_up?}>
+        <h2 class="bold text-xl mb-8">Connect NervesHub link</h2>
+        <p>Bring this device into your NervesHub account with a Shared Secret for the easiest onboarding.</p>
+        <form id="nh_link" name="nh_link" phx-submit="submit_link" class="flex flex-wrap">
+            <label class="block grow">NervesHub instance <input type="text" id="nh_instance" name="nh_instance" value="devices.nervescloud.com" phx-update="ignore" /></label>
+            <label class="block grow">Serial number <input type="text" id="nh_identifier" name="nh_identifer" value={System.unique_integer([:positive])} phx-update="ignore" /></label>
+            <label class="block grow">Product key <input type="text" id="nh_key" name="nh_key" /></label>
+            <label class="block grow">Product secret <input type="text" id="nh_secret" name="nh_secret" /></label>
+            <button>Connect</button>
+        </form>
+    </div>
     """
+  end
+
+  def handle_event(
+        "submit_link",
+        params,
+        socket
+      ) do
+    KioskCommon.NervesHubManager.start(params)
+    {:noreply, socket}
   end
 
   def handle_info(:check_connection, socket) do
@@ -38,5 +57,5 @@ defmodule KioskUiWeb.OnboardLive do
   defp assign_connection(socket),
     do:
       socket
-      |> assign(connected?: NervesHubLink.connected?())
+      |> assign(network_up?: true, link_set_up?: KioskCommon.NervesHubManager.status().started?)
 end
