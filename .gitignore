@@ -17,3 +17,4 @@
 erl_crash.dump
 /.envrc
 priv/static
+.elixir_ls
