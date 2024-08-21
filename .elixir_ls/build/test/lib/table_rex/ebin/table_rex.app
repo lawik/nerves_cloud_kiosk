@@ -1,0 +1,12 @@
+{application,table_rex,
+             [{optional_applications,[]},
+              {applications,[kernel,stdlib,elixir,logger]},
+              {description,"Generate configurable text-based tables for display (ASCII & more)"},
+              {modules,['Elixir.TableRex','Elixir.TableRex.Cell',
+                        'Elixir.TableRex.Column','Elixir.TableRex.Error',
+                        'Elixir.TableRex.Renderer',
+                        'Elixir.TableRex.Renderer.Text',
+                        'Elixir.TableRex.Renderer.Text.Meta',
+                        'Elixir.TableRex.Table']},
+              {registered,[]},
+              {vsn,"4.0.0"}]}.

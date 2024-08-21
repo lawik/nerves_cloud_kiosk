@@ -1,0 +1,12 @@
+{application,shoehorn,
+             [{optional_applications,[]},
+              {applications,[kernel,stdlib,elixir,crypto,logger]},
+              {description,"Shoehorn helps you handle OTP application failures"},
+              {modules,['Elixir.Shoehorn','Elixir.Shoehorn.Application',
+                        'Elixir.Shoehorn.DefaultHandler',
+                        'Elixir.Shoehorn.Handler','Elixir.Shoehorn.Release',
+                        'Elixir.Shoehorn.ReleaseError',
+                        'Elixir.Shoehorn.ReportHandler']},
+              {registered,[]},
+              {vsn,"0.9.2"},
+              {mod,{'Elixir.Shoehorn.Application',[]}}]}.

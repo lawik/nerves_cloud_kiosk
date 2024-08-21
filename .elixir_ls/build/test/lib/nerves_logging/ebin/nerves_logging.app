@@ -1,0 +1,11 @@
+{application,nerves_logging,
+             [{optional_applications,[]},
+              {applications,[kernel,stdlib,elixir,logger]},
+              {description,"Route system log messages through the Elixir logger"},
+              {modules,['Elixir.NervesLogging.Application',
+                        'Elixir.NervesLogging.KmsgParser',
+                        'Elixir.NervesLogging.KmsgTailer',
+                        'Elixir.NervesLogging.SyslogParser',
+                        'Elixir.NervesLogging.SyslogTailer']},
+              {registered,[]},
+              {vsn,"0.2.2"}]}.

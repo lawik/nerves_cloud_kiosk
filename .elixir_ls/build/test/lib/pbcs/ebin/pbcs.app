@@ -1,0 +1,11 @@
+{application,pbcs,
+             [{optional_applications,[]},
+              {applications,[kernel,stdlib,elixir,crypto]},
+              {description,"PKCS #5: Password-Based Cryptography Specification Version 2.0"},
+              {modules,['Elixir.PBCS','Elixir.PBCS.AES_CBC_HMAC_SHA2',
+                        'Elixir.PBCS.AES_GCM','Elixir.PBCS.ContentEncryptor',
+                        'Elixir.PBCS.CryptoWrapper','Elixir.PBCS.KeyManager',
+                        'Elixir.PBCS.PBES2_HMAC_SHA2','Elixir.PBCS.PKCS5',
+                        'Elixir.PBCS.Utils']},
+              {registered,[]},
+              {vsn,"0.1.4"}]}.

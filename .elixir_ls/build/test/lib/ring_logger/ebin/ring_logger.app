@@ -1,0 +1,10 @@
+{application,ring_logger,
+             [{optional_applications,[]},
+              {applications,[kernel,stdlib,elixir,logger,circular_buffer]},
+              {description,"A ring buffer backend for Elixir Logger with IO streaming"},
+              {modules,['Elixir.RingLogger','Elixir.RingLogger.Autoclient',
+                        'Elixir.RingLogger.Buffer','Elixir.RingLogger.Client',
+                        'Elixir.RingLogger.Persistence',
+                        'Elixir.RingLogger.Server']},
+              {registered,[]},
+              {vsn,"0.10.5"}]}.

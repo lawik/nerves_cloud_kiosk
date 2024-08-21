@@ -1,0 +1,13 @@
+{application,property_table,
+             [{optional_applications,[]},
+              {applications,[kernel,stdlib,elixir,crypto,logger]},
+              {description,"In-memory key-value store with subscriptions"},
+              {modules,['Elixir.PropertyTable','Elixir.PropertyTable.Event',
+                        'Elixir.PropertyTable.Matcher',
+                        'Elixir.PropertyTable.Matcher.StringPath',
+                        'Elixir.PropertyTable.Persist',
+                        'Elixir.PropertyTable.PersistFile',
+                        'Elixir.PropertyTable.Supervisor',
+                        'Elixir.PropertyTable.Updater']},
+              {registered,[]},
+              {vsn,"0.2.5"}]}.
