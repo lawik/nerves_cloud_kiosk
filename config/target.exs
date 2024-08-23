@@ -60,15 +60,6 @@ config :vintage_net,
     {"wlan0",
      %{
        type: VintageNetWiFi,
-       vintage_net_wifi: %{
-         networks: [
-           %{
-             key_mgmt: :wpa_psk,
-             ssid: System.get_env("NERVES_SSID"),
-             psk: System.get_env("NERVES_PSK")
-           }
-         ]
-       },
        ipv4: %{method: :dhcp}
      }}
   ]

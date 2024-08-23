@@ -1,5 +1,11 @@
 import Config
 
+# Use Ringlogger as the logger backend and remove :console.
+# See https://hexdocs.pm/ring_logger/readme.html for more information on
+# configuring ring_logger.
+
+config :logger, backends: [RingLogger, :console]
+
 # Add configuration that is only needed when running on the host here.
 config :nerves_runtime,
   kv_backend:
@@ -65,7 +71,7 @@ config :phoenix_live_view, :debug_heex_annotations, true
 config :kiosk, dev_routes: true
 
 config :nerves_hub_link,
-  device_api_host: "devices.nervescloud.com",
+  host: "devices.nervescloud.com",
   remote_iex: true,
   connect: false,
   shared_secret: [
