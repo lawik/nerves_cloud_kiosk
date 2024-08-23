@@ -23,6 +23,7 @@ defmodule Kiosk.WifiManager do
   end
 
   def scan do
+    Logger.info("Scan requested...")
     GenServer.cast(__MODULE__, :scan)
   end
 
@@ -122,6 +123,7 @@ defmodule Kiosk.WifiManager do
   end
 
   def configure_ap_mode(interface, name) do
+    Logger.info("Reconfiguring into AP mode: #{interface} #{name}")
     VintageNet.configure(interface, %{
       type: VintageNetWiFi,
       vintage_net_wifi: %{

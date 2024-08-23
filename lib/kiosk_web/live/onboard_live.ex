@@ -14,6 +14,7 @@ defmodule KioskWeb.OnboardLive do
         |> assign_connection()
 
       check_connection()
+      scan_wifi()
       {:ok, socket}
     else
       socket =
@@ -45,8 +46,8 @@ defmodule KioskWeb.OnboardLive do
         </div>
     </div>
 
-    <div :if={@network_up? and @link_set_up?} class="px-4 py-2 rounded-full bg-slate-300">The link to NervesHub has been set up.</div>
-    <div :if={@network_up? and not @link_set_up?}>
+    <div :if={@link_set_up?} class="px-4 py-2 rounded-full bg-slate-300">The link to NervesHub has been set up.</div>
+    <div :if={not @link_set_up?}>
         <h2 class="bold text-xl mb-8">Connect to NervesHub</h2>
         <p>Bring this device into your NervesHub account with a Shared Secret for the easiest onboarding.</p>
         <form id="nh_link" name="nh_link" phx-submit="submit_link" class="flex flex-wrap justify-center gap-4">
@@ -56,15 +57,15 @@ defmodule KioskWeb.OnboardLive do
             </label>
             <label class="block w-full flex flex-wrap justify-center">
               <span class="block w-full text-center">Serial number</span>
-              <input class="block w-full rounded-full bg-slate-200 border-0  text-center" type="text" id="nh_identifier" name="nh_identifer" value={System.unique_integer([:positive])} phx-update="ignore" />
+              <input class="block w-full rounded-full bg-slate-200 border-0  text-center" type="text" id="nh_identifier" name="nh_identifer" value={Nerves.Runtime.serial_number()} phx-update="ignore" />
             </label>
             <label class="block w-full flex flex-wrap justify-center">
               <span class="block w-full text-center">Product key</span>
-              <input class="block w-full rounded-full bg-slate-200 border-0  text-center" type="text" id="nh_key" name="nh_key" />
+              <input class="block w-full rounded-full bg-slate-200 border-0  text-center" type="text" id="nh_key" name="nh_key" phx-update="ignore" />
             </label>
             <label class="block w-full flex flex-wrap justify-center">
               <span class="block w-full text-center">Product secret</span>
-              <input class="block w-full rounded-full bg-slate-200 border-0  text-center" type="text" class="grow" id="nh_secret" name="nh_secret" />
+              <input class="block w-full rounded-full bg-slate-200 border-0  text-center" type="text" class="grow" id="nh_secret" name="nh_secret" phx-update="ignore" />
             </label>
             <button>Connect</button>
         </form>
@@ -100,6 +101,14 @@ defmodule KioskWeb.OnboardLive do
     {:noreply, socket}
   end
 
+  def handle_info(:scan_wifi, socket) do
+    if not socket.assigns.network_up? do
+      WifiManager.scan()
+    end
+    scan_wifi()
+    {:noreply, socket}
+  end
+
   def handle_info({:access_points, aps}, socket) do
     Logger.info("Received APs: #{inspect(aps)}")
     {:noreply, assign(socket, access_points: aps)}
@@ -111,12 +120,10 @@ defmodule KioskWeb.OnboardLive do
   end
 
   defp check_connection(), do: Process.send_after(self(), :check_connection, 500)
+  defp scan_wifi(), do: Process.send_after(self(), :scan_wifi, 10_000)
 
   defp assign_connection(socket) do
     connected? = WifiManager.connected?()
-    if not connected? do
-      WifiManager.scan()
-    end
 
     socket
     |> assign(network_up?: connected?, link_set_up?: Kiosk.NervesHubManager.status().started?)

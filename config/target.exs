@@ -117,11 +117,8 @@ config :kiosk, KioskWeb.Endpoint,
 config :phoenix, :json_library, Jason
 
 config :nerves_hub_link,
-  device_api_host: "devices.nervescloud.com",
-  shared_secret: [
-    product_key: System.get_env("NERVES_HUB_KEY"),
-    product_secret: System.get_env("NERVES_HUB_SECRET")
-  ]
+  connect: false,
+  host: "devices.nervescloud.com"
 
 # Import target specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

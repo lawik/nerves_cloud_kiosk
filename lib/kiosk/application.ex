@@ -16,6 +16,7 @@ defmodule Kiosk.Application do
         {Phoenix.PubSub, name: Kiosk.PubSub},
         {PropertyTable, name: Kiosk.NervesHub, persist_data_path: @persist_path},
         {Kiosk.NervesHubManager, pubsub: Kiosk.PubSub},
+        {Kiosk.WifiManager, interface: "wlan0", ap_name: "Setup #{Nerves.Runtime.serial_number()}"},
         KioskWeb.Telemetry,
         # TODO: Wire up something reasonable for Ecto and migrations
         # Kiosk.Repo,
