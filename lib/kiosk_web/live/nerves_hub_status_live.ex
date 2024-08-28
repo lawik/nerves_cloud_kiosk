@@ -133,25 +133,25 @@ defmodule KioskWeb.NervesHubStatusLive do
   def render(assigns) do
     ~H"""
     <!-- only show this if something is actually happening -->
-    <div :if={not @connected? or @status != :idle or @console_active? } class="fixed top-4 left-0 right-0 w-screen flex justify-center">
+    <div :if={not @connected? or @status != :idle or @console_active? } class="fixed top-0 right-0 text-xs">
       <%= case @status do %>
         <% {:fwup_error, error} -> %>
-          <div class="rounded-full bg-red-600 text-white p-4 px-8">Error: <%= error %></div>
+          <div class="rounded-bl bg-red-600 text-white p-1 px-2">Error: <%= error %></div>
         <% {:updating, progress} -> %>
           <div class="w-full h-2"><div class="h-full bg-lime-500" style={"width: #{progress}%"}></div></div>
 
         <% :update_rescheduled -> %>
-          <div class="rounded-full bg-slate-300 p-4 px-8">An update has been scheduled</div>
+          <div class="rounded-bl bg-slate-200 text-slate-800 p-1 px-2">An update has been scheduled</div>
         <% _ -> %>
 
       <% end %>
 
       <div :if={@status != :blank and not @connected?}>
-        <div class="rounded-full bg-slate-300 p-4 px-8">This device is not connected to the server.</div>
+        <div class="rounded-bl bg-slate-200 text-slate-800 p-1 px-2">This device is not connected to the server.</div>
       </div>
 
       <div :if={@console_active?}>
-        <div class="rounded-full bg-slate-300 p-4 px-8">A remote service console is active.</div>
+        <div class="rounded-bl bg-slate-200 text-slate-800 p-4 px-8">A remote service console is active.</div>
       </div>
 
     </div>
