@@ -81,19 +81,27 @@ function onChange(input) {
     kbTarget.value = input;
   }
 
-  kbTarget.selectionStart = lastKnownCaret;
-  kbTarget.selectionEnd = lastKnownCaret;
   //can't get focus to stick
   //kbTarget.focus()
 }
 
 function onKeyPress(button) {
   console.log("Button pressed", button);
+  keepKeyboard();
 
   /**
    * If you want to handle the shift and caps lock buttons
    */
   if (button === "{shift}" || button === "{lock}") handleShift();
+}
+
+function handleShift() {
+  let currentLayout = keyboard.options.layoutName;
+  let shiftToggle = currentLayout === "default" ? "shift" : "default";
+
+  keyboard.setOptions({
+    layoutName: shiftToggle
+  });
 }
 
 document.body.addEventListener("focusin", (e) => {
@@ -104,6 +112,7 @@ document.body.addEventListener("focusin", (e) => {
     kbTarget = e.target;
     kbTarget.addEventListener("input", updateInput);
     kbEl.classList.remove("hidden");
+    keyboard.setInput(kbTarget.value)
   } else {
 
   }
