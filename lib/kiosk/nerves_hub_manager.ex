@@ -32,6 +32,10 @@ defmodule Kiosk.NervesHubManager do
     GenServer.call(__MODULE__, {:start, nh_map})
   end
 
+  def remove_credentials do
+    GenServer.call(__MODULE__, :remove_credentials)
+  end
+
   def handle_continue(:start, state) do
     case Application.ensure_all_started(:nerves_hub_link) do
       {:ok, _apps} ->
@@ -50,8 +54,6 @@ defmodule Kiosk.NervesHubManager do
     new = Enum.map(nh_creds, fn {key, value} -> {[key], value} end) |> Map.new()
     # Temporarily set the new config
     set_application_env(new)
-
-    dbg(Application.get_all_env(:nerves_hub_link))
 
     result =
       case Application.ensure_all_started(:nerves_hub_link) do
@@ -89,6 +91,19 @@ defmodule Kiosk.NervesHubManager do
     else
       {:reply, :ok, state}
     end
+  end
+
+  def handle_call(:remove_credentials, _from, state) do
+    starting_config = Application.get_all_env(:nerves_hub_link)
+    config = Keyword.delete(starting_config, :shared_secret)
+    Application.put_all_env(nerves_hub_link: config)
+    PropertyTable.delete(Kiosk.NervesHub, "nh_instance")
+    PropertyTable.delete(Kiosk.NervesHub, "nh_identifier")
+    PropertyTable.delete(Kiosk.NervesHub, "nh_key")
+    PropertyTable.delete(Kiosk.NervesHub, "nh_secret")
+    Application.stop(:nerves_hub_link)
+    Phoenix.PubSub.broadcast(state.pubsub, "nerves_hub_manager", {:link, :stopped})
+    {:reply, :ok, %{state | started?: false, starting?: false}}
   end
 
   defp get_prop_table do

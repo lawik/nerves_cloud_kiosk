@@ -27,7 +27,6 @@ defmodule KioskWeb.OnboardLive do
 
   def render(assigns) do
     ~H"""
-
     <div :if={!@network_up?}>
         <h2 :if={@access_points != []} class="bold text-xl mb-8">Connect to Wi-Fi</h2>
         <p :if={@access_points == []}>Scanning Wi-Fi...</p>

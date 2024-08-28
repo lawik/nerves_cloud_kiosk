@@ -21,6 +21,126 @@ import "phoenix_html"
 import {Socket} from "phoenix"
 import {LiveSocket} from "phoenix_live_view"
 import topbar from "../vendor/topbar"
+import Keyboard from './keyboard'
+
+const keyboard = new Keyboard({
+  onChange: input => onChange(input),
+  onKeyPress: button => onKeyPress(button)
+});
+
+let kbEl = document.getElementById("keyboard-container");
+kbEl.classList.add("hidden");
+let kbTarget = null;
+let kbUnhit = true;
+let lastKnownCaret = 0;
+
+console.log(keyboard);
+kbEl.addEventListener("click", () => {
+  kbUnhit = false;
+});
+
+function onChange(input) {
+  console.log("Input changed", input);
+  keepKeyboard();
+  // First character
+  if (input.length == 1) {
+    let text = kbTarget.value;
+    let originalLength = text.length;
+    let keepFirstOffset = originalLength;
+    let keepSecondOffset = originalLength;
+    switch (kbTarget.selectionDirection) {
+      case "forward":
+        lastKnownCaret = kbTarget.selectionEnd;
+        keepFirstOffset = kbTarget.selectionStart;
+        keepSecondOffset = kbTarget.selectionEnd;
+        break;
+      case "backward":
+        lastKnownCaret = kbTarget.selectionStart;
+        keepFirstOffset = kbTarget.selectionStart;
+        keepSecondOffset = kbTarget.selectionEnd;
+        break;
+      default:
+        lastKnownCaret = kbTarget.selectionStart;
+  }
+
+    let first = text.substring(0, keepFirstOffset);
+    let second = text.substring(keepSecondOffset, originalLength)
+    kbTarget.value = first + input + second;
+    keyboard.setInput(kbTarget.value)
+  } else {
+    switch (kbTarget.selectionDirection) {
+      case "forward":
+        lastKnownCaret = kbTarget.selectionEnd;
+        break;
+      case "backward":
+        lastKnownCaret = kbTarget.selectionStart;
+        break;
+      default:
+        lastKnownCaret = kbTarget.selectionStart;
+  }
+    kbTarget.value = input;
+  }
+
+  kbTarget.selectionStart = lastKnownCaret;
+  kbTarget.selectionEnd = lastKnownCaret;
+  //can't get focus to stick
+  //kbTarget.focus()
+}
+
+function onKeyPress(button) {
+  console.log("Button pressed", button);
+
+  /**
+   * If you want to handle the shift and caps lock buttons
+   */
+  if (button === "{shift}" || button === "{lock}") handleShift();
+}
+
+document.body.addEventListener("focusin", (e) => {
+  console.log("focusin")
+  console.log(e.target)
+  if (e.target instanceof HTMLInputElement) {
+    keepKeyboard();
+    kbTarget = e.target;
+    kbTarget.addEventListener("input", updateInput);
+    kbEl.classList.remove("hidden");
+  } else {
+
+  }
+});
+
+let updateInput = function (event) {
+  keyboard.setInput(event.target.value);
+}
+
+document.body.addEventListener("focusout", (e) => {
+  console.log(e)
+  if (kbTarget !== null) {
+    kbTarget.removeEventListener("input", updateInput)
+  }
+  hideKeyboardIfNotHit()
+})
+
+function keepKeyboard() {
+  kbUnhit = false;
+  window.setTimeout(() => {
+    // Hack to set this after events have fired but before delayed events
+    kbUnhit = false;
+  })
+}
+
+function hideKeyboardIfNotHit() {
+  kbUnhit = true;
+  console.log("consider hiding..")
+  window.setTimeout(() => {
+    console.log("hiding?", kbUnhit)
+    if(kbUnhit) {
+      console.log("hidden")
+      kbEl.classList.add("hidden");
+    }
+  },100)
+}
+
 
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 let liveSocket = new LiveSocket("/live", Socket, {

@@ -42,7 +42,8 @@ config :kiosk, KioskWeb.Endpoint,
   pubsub_server: Kiosk.PubSub,
   watchers: [
     esbuild: {Esbuild, :install_and_run, [:kiosk, ~w(--sourcemap=inline --watch)]},
-    tailwind: {Tailwind, :install_and_run, [:kiosk, ~w(--watch)]}
+    tailwind: {Tailwind, :install_and_run, [:kiosk, ~w(--watch)]},
+    tailwind_2: {Tailwind, :install_and_run, [:keyboard, ~w(--watch)]}
   ],
   reloadable_apps: [:kiosk],
   # Watch static and templates for browser reloading.

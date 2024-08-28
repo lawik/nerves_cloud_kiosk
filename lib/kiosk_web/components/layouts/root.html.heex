@@ -8,10 +8,16 @@
       <%= assigns[:page_title] || "Kiosk" %>
     </.live_title>
     <link phx-track-static rel="stylesheet" href={~p"/assets/app.css"} />
+    <link phx-track-static rel="stylesheet" href={~p"/assets/keyboard.css"} />
     <script defer phx-track-static type="text/javascript" src={~p"/assets/app.js"}>
     </script>
   </head>
   <body class="bg-white antialiased">
     <%= @inner_content %>
+    <div id="keyboard-container" style="margin-bottom: 230px;">
+      <div class="fixed bottom-0 left-0 right-0">
+      <div class="simple-keyboard"></div>
+      </div>
+    </div>
   </body>
 </html>

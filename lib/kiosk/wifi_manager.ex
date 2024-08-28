@@ -14,8 +14,14 @@ defmodule Kiosk.WifiManager do
       ssid: nil,
       psk: nil
     }
-    VintageNet.subscribe(["interface", state.interface, :_])
-    {:ok, state, {:continue, :setup}}
+    try do
+      VintageNet.subscribe(["interface", state.interface, :_])
+      {:ok, state, {:continue, :setup}}
+    rescue 
+      _ ->
+        # Probably not on-device, VintageNet is missing
+        {:ok, state}
+    end
   end
 
   def connected? do
@@ -113,7 +119,13 @@ defmodule Kiosk.WifiManager do
 
   @impl GenServer
   def handle_cast(:scan, state) do
-    VintageNet.scan(state.interface)
+    try do
+      VintageNet.scan(state.interface)
+    rescue
+      _ ->
+        # Probably not on-device
+        :ok
+    end
     {:noreply, state}
   end
 
@@ -170,8 +182,14 @@ defmodule Kiosk.WifiManager do
   end
 
   defp get_status(interface) do
-    for {[_, _, field], value} <- VintageNet.match(["interface", interface, :_]), into: %{} do
-      {field, value}
+    try do
+      for {[_, _, field], value} <- VintageNet.match(["interface", interface, :_]), into: %{} do
+        {field, value}
+      end
+    rescue
+      _ ->
+        # Probably not on-device
+        %{}
     end
   end
 end

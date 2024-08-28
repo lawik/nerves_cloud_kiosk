@@ -35,6 +35,14 @@ config :tailwind,
       --output=../priv/static/assets/app.css
     ),
     cd: Path.expand("../assets", __DIR__)
+  ],
+  keyboard: [
+    args: ~w(
+      --config=tailwind.config.js
+      --input=js/keyboard/build/css/index.css
+      --output=../priv/static/assets/keyboard.css
+    ),
+    cd: Path.expand("../assets", __DIR__)
   ]
 
 # Set the SOURCE_DATE_EPOCH date for reproducible builds.
