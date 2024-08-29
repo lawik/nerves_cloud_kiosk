@@ -16,7 +16,8 @@ defmodule Kiosk.Application do
         {Phoenix.PubSub, name: Kiosk.PubSub},
         {PropertyTable, name: Kiosk.NervesHub, persist_data_path: @persist_path},
         {Kiosk.NervesHubManager, pubsub: Kiosk.PubSub},
-        {Kiosk.WifiManager, interface: "wlan0", ap_name: "Setup #{Nerves.Runtime.serial_number()}"},
+        {Kiosk.NetworkManager,
+         wifi: "wlan0", wired: ["eth0"], ap_name: "Setup #{hostname()}.local"},
         KioskWeb.Telemetry,
         # TODO: Wire up something reasonable for Ecto and migrations
         # Kiosk.Repo,
@@ -34,10 +35,18 @@ defmodule Kiosk.Application do
     Supervisor.start_link(children, opts)
   end
 
+  defp hostname do
+    case :inet.gethostname() do
+      {:ok, hostname_charlist} -> to_string(hostname_charlist)
+      _ -> "Connect to set up"
+    end
+  end
+
   def children(:frio_rpi4) do
     config = Application.get_env(:kiosk, KioskWeb.Endpoint)
     host = config[:url][:host]
     port = config[:http][:port]
+
     [
       {Kiosk, dir: "/data", starting_page: "http://#{host}:#{port}"}
     ]

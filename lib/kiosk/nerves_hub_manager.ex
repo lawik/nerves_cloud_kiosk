@@ -1,5 +1,6 @@
 defmodule Kiosk.NervesHubManager do
   use GenServer
+  require Logger
 
   def start_link(opts) do
     GenServer.start_link(__MODULE__, opts, name: __MODULE__)
@@ -21,18 +22,22 @@ defmodule Kiosk.NervesHubManager do
   end
 
   def status do
+    Logger.info("NHB.status")
     GenServer.call(__MODULE__, :status)
   end
 
   def start do
+    Logger.info("NHB.start")
     GenServer.call(__MODULE__, :start)
   end
 
   def start(nh_map) do
+    Logger.info("NHB.start1")
     GenServer.call(__MODULE__, {:start, nh_map})
   end
 
   def remove_credentials do
+    Logger.info("NHB.remove_credentials")
     GenServer.call(__MODULE__, :remove_credentials)
   end
 
@@ -55,20 +60,19 @@ defmodule Kiosk.NervesHubManager do
     # Temporarily set the new config
     set_application_env(new)
 
-    result =
-      case Application.ensure_all_started(:nerves_hub_link) do
-        {:ok, _apps} ->
-          # Persist the new config
-          write_prop_table(new)
-          Phoenix.PubSub.broadcast(state.pubsub, "nerves_hub_manager", {:link, :started})
-          {:noreply, %{state | started?: true, starting?: false}}
+    case Application.ensure_all_started(:nerves_hub_link) do
+      {:ok, _apps} ->
+        # Persist the new config
+        write_prop_table(new)
+        Phoenix.PubSub.broadcast(state.pubsub, "nerves_hub_manager", {:link, :started})
+        {:noreply, %{state | started?: true, starting?: false}}
 
-        {:error, {:nerves_hub_link, _}} ->
-          Phoenix.PubSub.broadcast(state.pubsub, "nerves_hub_manager", {:link, :not_started})
-          # Restore the old config
-          Application.put_all_env(nerves_hub_link: starting_config)
-          {:noreply, %{state | started?: false, starting?: false}}
-      end
+      {:error, {:nerves_hub_link, _}} ->
+        Phoenix.PubSub.broadcast(state.pubsub, "nerves_hub_manager", {:link, :not_started})
+        # Restore the old config
+        Application.put_all_env(nerves_hub_link: starting_config)
+        {:noreply, %{state | started?: false, starting?: false}}
+    end
   end
 
   def handle_call(:status, _from, state) do

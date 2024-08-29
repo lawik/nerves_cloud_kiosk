@@ -6,13 +6,16 @@ defmodule KioskWeb.NervesHubStatusLive do
 
   alias Phoenix.LiveView.JS
   import KioskWeb.Gettext
+  require Logger
 
   @doc """
   TODO: doc
   """
   def mount(_, _, socket) do
+    Logger.info("mount NH")
     socket =
       if connected?(socket) do
+        Logger.info("Connecting NH LiveView...")
         Phoenix.PubSub.subscribe(Kiosk.PubSub, "nerves_hub_manager")
 
         socket =
@@ -21,11 +24,14 @@ defmodule KioskWeb.NervesHubStatusLive do
           |> assign_info()
 
         refresh(socket)
+        Logger.info("Connected NH LiveView: OK")
         socket
       else
+        Logger.info("Dead NH rendering...")
         assign_info_blank(socket)
       end
 
+      Logger.info("mount  NH reply")
     {:ok, socket}
   end
 
