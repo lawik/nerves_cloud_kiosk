@@ -20,6 +20,7 @@ defmodule Kiosk.Application do
     opts = [strategy: :one_for_one, name: Kiosk.Supervisor]
 
     File.mkdir_p!(@persist_data_path)
+
     children =
       [
         {Phoenix.PubSub, name: Kiosk.PubSub},

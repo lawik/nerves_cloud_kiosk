@@ -51,7 +51,7 @@ defmodule KioskWeb.OnboardLive do
           <h2>Wi-Fi</h2>
           <p>Scanning Wi-Fi...</p>
         </div>
-        <div id="with-aps" :if={@access_points != []}>
+        <div id="with-aps" :if={not @wifi.connected? and @access_points != []}>
           <h2 class="bold text-xl mb-8">Connect to Wi-Fi</h2>
           <div :for={ap <- @access_points}>
             <button phx-value-ssid={ap.ssid} phx-click="select-ap">
@@ -66,6 +66,12 @@ defmodule KioskWeb.OnboardLive do
                 <button>Connect</button>
             </form>
           </div>
+        </div>
+        <div id="wifi-connected" :if={@wifi.connected?}>
+          <h2>On network <%= @wifi.name %></h2>
+          <form id="wifi-dc" name="wifi-dc" phx-submit="disconnect-wifi" class="">
+            <button>Disconnect</button>
+          </form>
         </div>
     </div>
 
@@ -114,6 +120,11 @@ defmodule KioskWeb.OnboardLive do
     {:noreply, assign(socket, connecting_ssid: socket.assigns.selected_ssid, selected_ssid: nil)}
   end
 
+  def handle_event("disconnect-wifi", socket) do
+    NetworkManager.disconnect()
+    {:noreply, assign(socket, connecting_ssid: nil, selected_ssid: nil)}
+  end
+
   def handle_info(:check_connection, socket) do
     socket =
       socket
@@ -137,7 +148,7 @@ defmodule KioskWeb.OnboardLive do
     {:noreply, assign(socket, access_points: aps)}
   end
 
-  def handle_info({:connection_failed, ssid}, socket) do
+  def handle_info({:connection_failed, _ssid}, socket) do
     {:noreply, assign(socket, connecting_ssid: nil)}
   end
 

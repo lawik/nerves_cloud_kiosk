@@ -4,8 +4,8 @@ defmodule KioskWeb.NervesHubStatusLive do
   """
   use KioskWeb, :live_view
 
-  alias Phoenix.LiveView.JS
-  import KioskWeb.Gettext
+  #alias Phoenix.LiveView.JS
+  #import KioskWeb.Gettext
   require Logger
 
   @doc """

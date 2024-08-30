@@ -57,6 +57,10 @@ defmodule Kiosk.NetworkManager do
     GenServer.cast(__MODULE__, {:connect, ssid, psk})
   end
 
+  def disconnect do
+    GenServer.cast(__MODULE__, :disconnect)
+  end
+
   # Figure out initial state as best we can
   @impl GenServer
   def handle_continue(:setup, state) do
@@ -194,7 +198,7 @@ defmodule Kiosk.NetworkManager do
   def handle_call(:wifi_status, _from, state) do
     status =
       if is_nil(state.wifi) do
-        %{exists?: false, ap_mode?: false, connected?: false}
+        %{exists?: false, ap_mode?: false, connected?: false, name: ""}
       else
         case get_status(state.wifi) do
           %{
@@ -202,14 +206,14 @@ defmodule Kiosk.NetworkManager do
             "state" => :configured,
             "connection" => _conn
           } ->
-            %{exists?: true, ap_mode?: true, connected?: false}
+            %{exists?: true, ap_mode?: true, connected?: false, name: ""}
 
           %{"config" => %{type: VintageNetWiFi}, "state" => :configured, "connection" => conn}
           when conn in [:lan, :internet] ->
-            %{exists?: true, ap_mode?: false, connected?: true}
+            %{exists?: true, ap_mode?: false, connected?: true, name: state.ssid}
 
           _ ->
-            %{exists?: true, ap_mode?: false, connected?: false}
+            %{exists?: true, ap_mode?: false, connected?: false, name: ""}
         end
       end
 
@@ -233,6 +237,15 @@ defmodule Kiosk.NetworkManager do
     if state.wifi do
       attemp_wifi_connection(state.wifi, ssid, psk)
       {:noreply, %{state | ssid: ssid, psk: psk}}
+    else
+      {:noreply, state}
+    end
+  end
+
+  def handle_cast(:disconnect, state) do
+    if state.wifi do
+      configure_ap_mode(state.wifi, state.ap_name)
+      {:noreply, %{state | ssid: nil, psk: nil}}
     else
       {:noreply, state}
     end
