@@ -5,16 +5,25 @@ defmodule Kiosk.Application do
 
   use Application
 
+  @persist_data_path (case Mix.target() do
+                        :host ->
+                          "/tmp"
+
+                        _ ->
+                          "/data/kiosk-nerves-hub"
+                      end)
+
   @impl true
   def start(_type, _args) do
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: Kiosk.Supervisor]
 
+    File.mkdir_p!(@persist_data_path)
     children =
       [
         {Phoenix.PubSub, name: Kiosk.PubSub},
-        {PropertyTable, name: Kiosk.NervesHub, persist_data_path: @persist_path},
+        {PropertyTable, name: Kiosk.NervesHub, persist_data_path: @persist_data_path},
         {Kiosk.NervesHubManager, pubsub: Kiosk.PubSub},
         {Kiosk.NetworkManager,
          wifi: "wlan0", wired: ["eth0"], ap_name: "Setup #{hostname()}.local"},

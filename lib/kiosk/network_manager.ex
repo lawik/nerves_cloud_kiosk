@@ -11,7 +11,8 @@ defmodule Kiosk.NetworkManager do
     state = %{
       wifi: Keyword.get(opts, :wifi, nil),
       wired: Keyword.get(opts, :wired, []),
-      ap_name: Keyword.get(opts, :ap_name, Nerves.Runtime.serial_number()),
+      # Truncate AP name to 32 characters
+      ap_name: Keyword.get(opts, :ap_name, Nerves.Runtime.serial_number()) |> String.slice(0..31),
       ssid: nil,
       psk: nil
     }

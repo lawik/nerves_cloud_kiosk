@@ -112,7 +112,8 @@ defmodule Kiosk.MixProject do
       {:frio_rpi4,
        path: "../frio_rpi4", runtime: false, nerves: [compile: true], targets: :frio_rpi4},
       {:muontrap, "~> 1.5"},
-      {:nerves_time, "~> 0.4.8"}
+      {:nerves_time, "~> 0.4.8"},
+      {:nerves_key, "~> 1.2"}
     ]
   end
 
