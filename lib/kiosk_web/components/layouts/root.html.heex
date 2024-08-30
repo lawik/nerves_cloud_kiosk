@@ -14,14 +14,14 @@
     </script>
   </head>
   <body class="bg-white antialiased">
-    <div class="absolute top-2 left-2">
-      <img src={~p"/images/nerves.svg"} class="w-[128px]" />
-    </div>
-    <%= @inner_content %>
-    <div id="keyboard-container" style="margin-bottom: 230px;">
+    <div id="keyboard-container" style="margin-bottom: 230px;" phx-update="ignore">
       <div class="fixed bottom-0 left-0 right-0">
       <div class="simple-keyboard"></div>
       </div>
     </div>
+    <div class="absolute top-2 left-2">
+      <img src={~p"/images/nerves.svg"} class="w-[128px]" />
+    </div>
+    <%= @inner_content %>
   </body>
 </html>

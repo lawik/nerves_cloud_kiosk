@@ -17,6 +17,8 @@ defmodule Kiosk.NetworkManager do
     }
 
     try do
+      schedule_self_check()
+
       Enum.each(state.wired, fn interface ->
         VintageNet.subscribe(["interface", interface, :_])
       end)
@@ -35,27 +37,22 @@ defmodule Kiosk.NetworkManager do
   end
 
   def has_internet? do
-    Logger.info("NM.has_internet?")
     GenServer.call(__MODULE__, :has_internet?)
   end
 
   def wifi_status do
-    Logger.info("NM.wifi_status")
     GenServer.call(__MODULE__, :wifi_status)
   end
 
   def scan do
-    Logger.info("Scan requested...")
     GenServer.cast(__MODULE__, :scan)
   end
 
   def subscribe do
-    Logger.info("NM.subscribe")
     Phoenix.PubSub.subscribe(Kiosk.PubSub, "network-manager")
   end
 
   def connect(ssid, psk) do
-    Logger.info("NM.connect")
     GenServer.cast(__MODULE__, {:connect, ssid, psk})
   end
 
@@ -98,6 +95,12 @@ defmodule Kiosk.NetworkManager do
   end
 
   @impl GenServer
+  def handle_info(:check, state) do
+    schedule_self_check()
+    # Run setup to check wifi status
+    {:noreply, state, {:continue, :setup}}
+  end
+
   def handle_info(:expect_connection, state) do
     state =
       case get_status(state.wifi) do
@@ -108,7 +111,7 @@ defmodule Kiosk.NetworkManager do
           state
 
         status ->
-          Logger.info("Connection seems to have failed, switchin to AP mode")
+          Logger.info("Connection seems to have failed, switching to AP mode")
           Logger.info("Status: #{inspect(status)}")
 
           if state.ssid do
@@ -301,5 +304,9 @@ defmodule Kiosk.NetworkManager do
         # Probably not on-device
         %{}
     end
+  end
+
+  defp schedule_self_check do
+    Process.send_after(self(), :check, 10_000)
   end
 end

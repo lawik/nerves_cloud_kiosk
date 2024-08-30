@@ -18,7 +18,12 @@ defmodule Kiosk do
       ]
 
       {:ok, pid} = Supervisor.init(children, strategy: :one_for_one)
-      navigate_to(opts[:starting_page])
+
+      Task.start(fn ->
+        :timer.sleep(1000)
+        Kiosk.navigate_to(opts[:starting_page])
+      end)
+
       {:ok, pid}
     end
 
@@ -55,7 +60,12 @@ defmodule Kiosk do
       spawn(fn ->
         MuonTrap.cmd(
           "cog",
-          ["--bg-color=#cad6d200", "--enable-developer-extras=1", url],
+          [
+            "--bg-color=#cad6d200",
+            "--enable-developer-extras=1",
+            "--enable-write-console-messages-to-stdout=1",
+            url
+          ],
           env: [
             {"XDG_RUNTIME_DIR", dir},
             {"COG_PLATFORM_FDO_VIEW_FULLSCREEN", "1"},

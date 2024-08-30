@@ -22,22 +22,18 @@ defmodule Kiosk.NervesHubManager do
   end
 
   def status do
-    Logger.info("NHB.status")
     GenServer.call(__MODULE__, :status)
   end
 
   def start do
-    Logger.info("NHB.start")
     GenServer.call(__MODULE__, :start)
   end
 
   def start(nh_map) do
-    Logger.info("NHB.start1")
     GenServer.call(__MODULE__, {:start, nh_map})
   end
 
   def remove_credentials do
-    Logger.info("NHB.remove_credentials")
     GenServer.call(__MODULE__, :remove_credentials)
   end
 

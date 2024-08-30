@@ -16,6 +16,7 @@
 # If the VM crashes, it generates a dump, let's ignore it too.
 erl_crash.dump
 /.envrc
+priv/static/cache_manifest.json
 priv/static/assets
 priv/static/images/*.gz
 .elixir_ls

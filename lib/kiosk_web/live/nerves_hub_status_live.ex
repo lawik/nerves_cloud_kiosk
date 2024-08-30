@@ -13,6 +13,7 @@ defmodule KioskWeb.NervesHubStatusLive do
   """
   def mount(_, _, socket) do
     Logger.info("mount NH")
+
     socket =
       if connected?(socket) do
         Logger.info("Connecting NH LiveView...")
@@ -31,7 +32,7 @@ defmodule KioskWeb.NervesHubStatusLive do
         assign_info_blank(socket)
       end
 
-      Logger.info("mount  NH reply")
+    Logger.info("mount  NH reply")
     {:ok, socket}
   end
 
@@ -50,6 +51,11 @@ defmodule KioskWeb.NervesHubStatusLive do
       |> assign_link_status()
       |> assign_info()
 
+    {:noreply, socket}
+  end
+
+  def handle_info(_, socket) do
+    Logger.info("unhandled message")
     {:noreply, socket}
   end
 
