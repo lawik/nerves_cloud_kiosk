@@ -42,37 +42,67 @@ defmodule KioskWeb.OnboardLive do
 
   def render(assigns) do
     ~H"""
-    <div id="hostname-container" :if={@hostname} class="absolute bottom-2 right-2">
-    Device: <%= @hostname %>.local
-    </div>
+    <h1 class="text-6xl text-center uppercase mb-12">Welcome</h1>
 
-    <div id="wifi-control" :if={@wifi.exists?}>
-        <div id="wifi-aps" :if={@access_points == []}>
-          <h2>Wi-Fi</h2>
-          <p>Scanning Wi-Fi...</p>
+    <div id="internet-status">
+      <%= if @internet? do %>
+      <div class="flex gap-4 text-lime-600">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+        </svg>
+        <div class="flex-grow">
+          <div class="">
+        <h2 class="text-lg font-bold mb-4">Connect to the Internet</h2>
+        <form phx-change="select-ap" phx-submit="connect-wifi" class="rounded bg-slate-200 p-2 ">
+            <label class="block mb-2">Wired: Unknown</label>
+            <label class="block mb-2">Wi-fi: <%= @wifi.name %></label>
+            <div id="wifi-connect-button" :if={@selected_ssid} class="my-4 flex justify-center">
+              <button class="rounded-md bg-lime-600 text-white px-4 py-2 basis-1/2">Connect</button>
+              </div>
+            </form>
         </div>
-        <div id="with-aps" :if={not @wifi.connected? and @access_points != []}>
-          <h2 class="bold text-xl mb-8">Connect to Wi-Fi</h2>
-          <div :for={ap <- @access_points}>
-            <button phx-value-ssid={ap.ssid} phx-click="select-ap">
-              <h3><%= ap.ssid %></h3>
-              <div>Signal: <%= ap.signal_percent %>%</div>
-            </button>
-            <form :if={ap.ssid == @selected_ssid} id="wifi" name="wifi" phx-submit="connect-wifi" class="flex flex-wrap justify-center gap-4">
-                <label class="block w-full flex flex-wrap justify-center">
-                  <span class="block w-full text-center">Passkey</span>
-                  <input class="block w-full rounded-full bg-slate-200 border-0 text-center" type="text" id="psk" name="psk" value="" phx-update="ignore" />
-                </label>
-                <button>Connect</button>
+        </div>
+
+      </div>
+
+      <% else %>
+      <div class="flex gap-4">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-8">
+          <path stroke-linecap="round" stroke-linejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+        </svg>
+        <div class="flex-grow">
+          <div class="">
+            <h2 class="text-lg font-bold mb-4">Connect to the Internet</h2>
+
+            <form phx-change="select-ap" phx-submit="connect-wifi" class="rounded bg-slate-200 p-2 ">
+            <label class="block mb-2">Wired: Unknown</label>
+            <div class="flex flex-grow gap-4">
+              <label id="wifi-block" :if={@wifi.exists?} class="block flex basis-1/2 gap-4">
+                <span class="content-center">Wi-Fi:</span>
+                <select id="aps" class="border-0 rounded-md flex-grow" name="ssid">
+                  <option selected={is_nil(@selected_ssid)} value="--unset--">Select network</option>
+                  <option :for={ap <- @access_points} selected={ap.ssid == @selected_ssid} value={ap.ssid}><%= ap.ssid %> (<%= ap.signal_percent %>%)</option>
+                </select></label>
+              <label class="flex basis-1/2 gap-4" :if={not is_nil(@selected_ssid)}>
+                <span class="content-center">Passkey:</span>
+                <input class="rounded-md border-0 bg-white flex-grow" type="text" id="psk" name="psk" value="" phx-update="ignore" />
+              </label>
+              <div>
+              </div>
+
+            </div>
+            <div id="wifi-connect-button" :if={@selected_ssid} class="my-4 flex justify-center">
+              <button class="rounded-md bg-lime-600 text-white px-4 py-2 basis-1/2">Connect</button>
+              </div>
             </form>
           </div>
         </div>
-        <div id="wifi-connected" :if={@wifi.connected?}>
-          <h2>On network <%= @wifi.name %></h2>
-          <form id="wifi-dc" name="wifi-dc" phx-submit="disconnect-wifi" class="">
-            <button>Disconnect</button>
-          </form>
-        </div>
+      </div>
+      <% end %>
+    </div>
+
+    <div id="hostname-container" :if={@hostname} class="absolute bottom-2 right-2">
+    Device: <%= @hostname %>.local
     </div>
 
     <div id="nh-link-ready" :if={@link_set_up?} class="px-4 py-2 rounded-full bg-slate-300">The link to NervesHub has been set up.</div>
@@ -112,6 +142,12 @@ defmodule KioskWeb.OnboardLive do
   end
 
   def handle_event("select-ap", %{"ssid" => ssid}, socket) do
+    ssid =
+      case ssid do
+        "--unset--" -> nil
+        ssid -> ssid
+      end
+
     {:noreply, assign(socket, selected_ssid: ssid)}
   end
 
@@ -168,7 +204,8 @@ defmodule KioskWeb.OnboardLive do
     socket
     |> assign(
       wifi: NetworkManager.wifi_status(),
-      internet?: NetworkManager.has_internet?(),
+      # internet?: NetworkManager.has_internet?(),
+      internet?: true,
       link_set_up?: Kiosk.NervesHubManager.status().started?
     )
   end
