@@ -45,6 +45,10 @@ defmodule Kiosk.NetworkManager do
     GenServer.call(__MODULE__, :wifi_status)
   end
 
+  def get_ips do
+    GenServer.call(__MODULE__, :get_ips)
+  end
+
   def scan do
     GenServer.cast(__MODULE__, :scan)
   end
@@ -218,6 +222,26 @@ defmodule Kiosk.NetworkManager do
       end
 
     {:reply, status, state}
+  end
+
+  def handle_call(:get_ips, _from, state) do
+    ips =
+      PropertyTable.match(VintageNet, ["interface", :_, "addresses"])
+      |> Enum.flat_map(fn {_key, addresses} ->
+        addresses
+        |> Enum.filter(fn %{family: fam} ->
+          fam == :inet
+        end)
+        |> Enum.map(fn {a, b, c, d} ->
+          "#{a}.#{b}.#{c}.#{d}"
+        end)
+      end)
+
+    {:reply, ips, state}
+  rescue
+    _ ->
+      # Probably not on-device
+      {:reply, ["127.0.0.1"], state}
   end
 
   @impl GenServer

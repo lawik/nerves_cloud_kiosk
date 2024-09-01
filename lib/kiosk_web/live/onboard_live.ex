@@ -12,10 +12,11 @@ defmodule KioskWeb.OnboardLive do
       socket =
         socket
         |> assign(
-          access_points: [],
+          access_points: [%{ssid: "Foo", signal_percent: 99}],
           selected_ssid: nil,
           connecting_ssid: nil,
-          hostname: hostname()
+          hostname: hostname(),
+          ips: []
         )
         |> assign_connection()
 
@@ -26,7 +27,13 @@ defmodule KioskWeb.OnboardLive do
     else
       socket =
         socket
-        |> assign(access_points: [], selected_ssid: nil, connecting_ssid: nil, hostname: nil)
+        |> assign(
+          access_points: [],
+          selected_ssid: nil,
+          connecting_ssid: nil,
+          hostname: nil,
+          ips: []
+        )
         |> assign_connection()
 
       {:ok, socket}
@@ -42,18 +49,18 @@ defmodule KioskWeb.OnboardLive do
 
   def render(assigns) do
     ~H"""
-    <h1 class="text-6xl text-center uppercase mb-12">Welcome</h1>
+    <!--<h1 class="text-6xl text-center uppercase mb-12">Welcome</h1>-->
 
     <div id="internet-status">
       <%= if @internet? do %>
-      <div class="flex gap-4 text-lime-600">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+      <div class="flex gap-4">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 min-w-8 text-lime-600">
           <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
         </svg>
         <div class="flex-grow">
           <div class="">
-        <h2 class="text-lg font-bold mb-4">Connect to the Internet</h2>
-        <form phx-change="select-ap" phx-submit="connect-wifi" class="rounded bg-slate-200 p-2 ">
+        <h2 class="text-lg font-bold text-lime-600">Connect to the Internet</h2>
+        <form phx-change="select-ap" phx-submit="connect-wifi" class="rounded p-2 ">
             <label class="block mb-2">Wired: Unknown</label>
             <label class="block mb-2">Wi-fi: <%= @wifi.name %></label>
             <div id="wifi-connect-button" :if={@selected_ssid} class="my-4 flex justify-center">
@@ -67,22 +74,23 @@ defmodule KioskWeb.OnboardLive do
 
       <% else %>
       <div class="flex gap-4">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-8">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 min-w-8">
           <path stroke-linecap="round" stroke-linejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
         </svg>
         <div class="flex-grow">
           <div class="">
             <h2 class="text-lg font-bold mb-4">Connect to the Internet</h2>
 
-            <form phx-change="select-ap" phx-submit="connect-wifi" class="rounded bg-slate-200 p-2 ">
+            <form phx-change="select-ap" phx-submit="connect-wifi" class="p-2 rounded-lg bg-slate-200">
             <label class="block mb-2">Wired: Unknown</label>
             <div class="flex flex-grow gap-4">
               <label id="wifi-block" :if={@wifi.exists?} class="block flex basis-1/2 gap-4">
                 <span class="content-center">Wi-Fi:</span>
-                <select id="aps" class="border-0 rounded-md flex-grow" name="ssid">
+                <select id="aps" :if={not @wifi.connected?} class="border-0 rounded-md flex-grow" name="ssid">
                   <option selected={is_nil(@selected_ssid)} value="--unset--">Select network</option>
                   <option :for={ap <- @access_points} selected={ap.ssid == @selected_ssid} value={ap.ssid}><%= ap.ssid %> (<%= ap.signal_percent %>%)</option>
                 </select></label>
+                <span id="wifi-name" :if={@wifi.connected?}><%= @wifi.name %></span>
               <label class="flex basis-1/2 gap-4" :if={not is_nil(@selected_ssid)}>
                 <span class="content-center">Passkey:</span>
                 <input class="rounded-md border-0 bg-white flex-grow" type="text" id="psk" name="psk" value="" phx-update="ignore" />
@@ -101,34 +109,61 @@ defmodule KioskWeb.OnboardLive do
       <% end %>
     </div>
 
-    <div id="hostname-container" :if={@hostname} class="absolute bottom-2 right-2">
-    Device: <%= @hostname %>.local
+    <div id="link-status">
+      <%= if @link_set_up? do %>
+      <div id="link-ready" class="flex gap-4">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 min-w-8 text-lime-600">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+        </svg>
+        <div class="flex-grow">
+          <div class="">
+            <h2 class="text-lg font-bold text-lime-600">NervesHub link ready</h2>
+          </div>
+        </div>
+      </div>
+
+      <% else %>
+      <div id="link-configure-form" class="flex mt-8 gap-4">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 min-w-8">
+          <path stroke-linecap="round" stroke-linejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+        </svg>
+        <div class="flex-grow">
+          <div class="">
+            <h2 class="text-lg font-bold mb-4">Configure your NervesHub link</h2>
+
+            <p class="my-4">Bring this device into your NervesHub account with a Shared Secret for the easiest onboarding.</p>
+            <form id="nh_link" name="nh_link" phx-submit="submit_link" class="bg-slate-200 rounded-lg p-2">
+                <label class="block flex basis-1/2 gap-4 my-2">
+                  <span class="content-center">NervesHub instance</span>
+                  <input class="border-0 rounded-md flex-grow bg-white" type="text" id="nh_instance" name="nh_instance" value="devices.nervescloud.com" phx-update="ignore" />
+                </label>
+                <label class="block flex basis-1/2 gap-4 my-2">
+                  <span class="content-center">Serial number</span>
+                  <input class="border-0 rounded-md flex-grow bg-white" type="text" id="nh_identifier" name="nh_identifer" value="" phx-update="ignore" />
+                </label>
+                <label class="block flex basis-1/2 gap-4 my-2">
+                  <span class="content-center">Product key</span>
+                  <input class="border-0 rounded-md flex-grow bg-white" type="text" id="nh_key" name="nh_key" phx-update="ignore" />
+                </label>
+                <label class="block flex basis-1/2 gap-4 my-2">
+                  <span class="content-center">Product secret</span>
+                  <input class="border-0 rounded-md flex-grow bg-white" type="text" class="grow" id="nh_secret" name="nh_secret" phx-update="ignore" />
+                </label>
+                <div id="nerves-hub-connect-button" class="my-4 flex justify-end">
+                  <button class="rounded-md bg-lime-600 text-white px-4 py-2 text-right">Connect</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      <% end %>
     </div>
 
-    <div id="nh-link-ready" :if={@link_set_up?} class="px-4 py-2 rounded-full bg-slate-300">The link to NervesHub has been set up.</div>
-    <div id="nh-form-container" :if={not @link_set_up?}>
-        <h2 class="bold text-xl mb-8">Connect to NervesHub</h2>
-        <p>Bring this device into your NervesHub account with a Shared Secret for the easiest onboarding.</p>
-        <form id="nh_link" name="nh_link" phx-submit="submit_link" class="flex flex-wrap justify-center gap-4">
-            <label class="block w-full flex flex-wrap justify-center">
-              <span class="block w-full text-center">NervesHub instance</span>
-              <input class="block w-full rounded-full bg-slate-200 border-0 text-center" type="text" id="nh_instance" name="nh_instance" value="devices.nervescloud.com" phx-update="ignore" />
-            </label>
-            <label class="block w-full flex flex-wrap justify-center">
-              <span class="block w-full text-center">Serial number</span>
-              <input class="block w-full rounded-full bg-slate-200 border-0  text-center" type="text" id="nh_identifier" name="nh_identifer" value="" phx-update="ignore" />
-            </label>
-            <label class="block w-full flex flex-wrap justify-center">
-              <span class="block w-full text-center">Product key</span>
-              <input class="block w-full rounded-full bg-slate-200 border-0  text-center" type="text" id="nh_key" name="nh_key" phx-update="ignore" />
-            </label>
-            <label class="block w-full flex flex-wrap justify-center">
-              <span class="block w-full text-center">Product secret</span>
-              <input class="block w-full rounded-full bg-slate-200 border-0  text-center" type="text" class="grow" id="nh_secret" name="nh_secret" phx-update="ignore" />
-            </label>
-            <button>Connect</button>
-        </form>
+    <div id="hostname-container" :if={@hostname} class="fixed bottom-2 left-2">
+    Device: <%= @hostname %>.local<br>
+    IP: <%= Enum.join(@ips, ", ") %>
     </div>
+
     """
   end
 
@@ -204,8 +239,10 @@ defmodule KioskWeb.OnboardLive do
     socket
     |> assign(
       wifi: NetworkManager.wifi_status(),
-      # internet?: NetworkManager.has_internet?(),
-      internet?: true,
+      # wifi: %{exists?: true, connected?: true, name: "My network", ap_mode?: false},
+      internet?: NetworkManager.has_internet?(),
+      # internet?: true,
+      ips: NetworkManager.get_ips(),
       link_set_up?: Kiosk.NervesHubManager.status().started?
     )
   end
