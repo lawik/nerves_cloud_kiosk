@@ -241,7 +241,7 @@ defmodule Kiosk.NetworkManager do
   rescue
     _ ->
       # Probably not on-device
-      {:reply, ["127.0.0.1"], state}
+      {:reply, [], state}
   end
 
   @impl GenServer
