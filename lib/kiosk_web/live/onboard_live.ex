@@ -12,7 +12,7 @@ defmodule KioskWeb.OnboardLive do
       socket =
         socket
         |> assign(
-          access_points: [%{ssid: "Foo", signal_percent: 99}],
+          access_points: [],
           selected_ssid: nil,
           connecting_ssid: nil,
           hostname: hostname(),

@@ -4,19 +4,16 @@ defmodule KioskWeb.NervesHubStatusLive do
   """
   use KioskWeb, :live_view
 
-  #alias Phoenix.LiveView.JS
-  #import KioskWeb.Gettext
+  # alias Phoenix.LiveView.JS
+  # import KioskWeb.Gettext
   require Logger
 
   @doc """
   TODO: doc
   """
   def mount(_, _, socket) do
-    Logger.info("mount NH")
-
     socket =
       if connected?(socket) do
-        Logger.info("Connecting NH LiveView...")
         Phoenix.PubSub.subscribe(Kiosk.PubSub, "nerves_hub_manager")
 
         socket =
@@ -25,14 +22,11 @@ defmodule KioskWeb.NervesHubStatusLive do
           |> assign_info()
 
         refresh(socket)
-        Logger.info("Connected NH LiveView: OK")
         socket
       else
-        Logger.info("Dead NH rendering...")
         assign_info_blank(socket)
       end
 
-    Logger.info("mount  NH reply")
     {:ok, socket}
   end
 
@@ -55,7 +49,6 @@ defmodule KioskWeb.NervesHubStatusLive do
   end
 
   def handle_info(_, socket) do
-    Logger.info("unhandled message")
     {:noreply, socket}
   end
 
@@ -68,6 +61,7 @@ defmodule KioskWeb.NervesHubStatusLive do
     socket
     |> assign(
       link_status: Kiosk.NervesHubManager.status(),
+      # link_status: %{starting?: false, started?: true},
       status: :idle,
       connected?: false,
       console_active?: false
@@ -85,6 +79,7 @@ defmodule KioskWeb.NervesHubStatusLive do
         # status: :update_rescheduled,
         connected?: nerves_hub_link_connected?(),
         # connected?: false,
+        # connected?: true,
         # console_active?: NervesHubLink.console_active?(),
         console_active?: nerves_hub_link_console_active?()
       )
@@ -145,27 +140,39 @@ defmodule KioskWeb.NervesHubStatusLive do
   def render(assigns) do
     ~H"""
     <!-- only show this if something is actually happening -->
-    <div :if={not @connected? or @status != :idle or @console_active? } class="fixed top-0 right-0 text-xs">
+    <div id="nerves-hub-status-indicator">
+    <div class="fixed top-2 right-2 text-xs flex gap-1">
+      <svg class="w-4" xmlns="http://www.w3.org/2000/svg" x="0" y="0" viewBox="0 0 187.98 152.5" style="enable-background:new 0 0 187.98 152.5" xml:space="preserve"><style>.st0{fill:#33647e}.st1{fill:#42a7c6}.st2{fill:#24272a}.st3{fill:#fff}.st4{fill:#672f25}.st5{fill:#aa2d29}</style><path d="M44.97 0h-36C4.02 0 0 4.02 0 8.97v134.57c0 4.95 4.01 8.97 8.97 8.97h30.01c4.95 0 8.97-4.01 8.97-8.97v-5.39c0-4.95-4.01-8.97-8.97-8.97h-6.69c-4.95 0-8.97-4.01-8.97-8.97V32.29c0-4.95 4.01-8.97 8.97-8.97h6.34c1.89 0 3.73.6 5.26 1.7l83.13 60.19c5.93 4.29 14.23.06 14.23-7.26v-3.83c0-2.83-1.34-5.49-3.6-7.19L50.33 1.78A9.006 9.006 0 0 0 44.97 0z"/><path d="M143.01 152.5h36c4.95 0 8.97-4.01 8.97-8.97V8.97c0-4.95-4.01-8.97-8.97-8.97H149c-4.95 0-8.97 4.01-8.97 8.97v5.39c0 4.95 4.01 8.97 8.97 8.97h6.69c4.95 0 8.97 4.01 8.97 8.97v87.91c0 4.95-4.01 8.97-8.97 8.97h-6.34c-1.89 0-3.73-.6-5.26-1.7l-83.13-60.2c-5.93-4.29-14.23-.06-14.23 7.26v3.83c0 2.83 1.34 5.49 3.6 7.19l87.31 65.17a9.048 9.048 0 0 0 5.37 1.77z"/></svg>
       <%= case @status do %>
         <% {:fwup_error, error} -> %>
-          <div class="rounded-bl bg-red-600 text-white p-1 px-2">Error: <%= error %></div>
+          <div class="rounded bg-red-600 text-white p-1 px-2">Error: <%= error %></div>
         <% {:updating, progress} -> %>
-          <div class="w-full h-2"><div class="h-full bg-lime-500" style={"width: #{progress}%"}></div></div>
+          <div class="animate-pulse w-8"><div class="h-4 bg-lime-500" style={"width: #{progress}%"}></div></div>
 
         <% :update_rescheduled -> %>
-          <div class="rounded-bl bg-slate-200 text-slate-800 p-1 px-2">An update has been scheduled</div>
-        <% _ -> %>
+          <div class="animate-pulse " title="An update has been scheduled">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4 animate-bounce">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+            </svg>
+          </div>
+        <% :idle -> %>
+          <div :if={not @connected?} class="animate-pulse" title="This device is not connected to the server">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4 align-center">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+            </svg>
+          </div>
 
+          <div :if={@connected?} class="" title="This device is connected to NervesHub">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4 align-center">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+            </svg>
+          </div>
+
+          <div :if={@console_active?}>
+              <div class="p-4 px-8">A remote service console is active.</div>
+          </div>
       <% end %>
-
-      <div :if={@status != :blank and not @connected?}>
-        <div class="rounded-bl bg-slate-200 text-slate-800 p-1 px-2">This device is not connected to the server.</div>
-      </div>
-
-      <div :if={@console_active?}>
-        <div class="rounded-bl bg-slate-200 text-slate-800 p-4 px-8">A remote service console is active.</div>
-      </div>
-
+    </div>
     </div>
     """
   end
