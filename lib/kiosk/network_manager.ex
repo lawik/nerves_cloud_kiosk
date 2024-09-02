@@ -184,6 +184,7 @@ defmodule Kiosk.NetworkManager do
     Logger.info(
       "VintageNet change: #{inspect(property)} from #{inspect(old_value)} to #{inspect(new_value)} .. #{inspect(metadata)}"
     )
+    Phoenix.PubSub.broadcast(Kiosk.PubSub, "network-manager", :change)
 
     {:noreply, state}
   end
