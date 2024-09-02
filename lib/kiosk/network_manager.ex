@@ -41,8 +41,8 @@ defmodule Kiosk.NetworkManager do
     GenServer.call(__MODULE__, :has_internet?)
   end
 
-  def wifi_status do
-    GenServer.call(__MODULE__, :wifi_status)
+  def status do
+    GenServer.call(__MODULE__, :status)
   end
 
   def get_ips do
@@ -199,10 +199,10 @@ defmodule Kiosk.NetworkManager do
   end
 
   @impl GenServer
-  def handle_call(:wifi_status, _from, state) do
-    status =
+  def handle_call(:status, _from, state) do
+    wifi =
       if is_nil(state.wifi) do
-        %{exists?: false, ap_mode?: false, connected?: false, name: ""}
+        %{exists?: false, ap_mode?: false, connected?: false, name: "", internet?: false}
       else
         case get_status(state.wifi) do
           %{
@@ -210,16 +210,45 @@ defmodule Kiosk.NetworkManager do
             "state" => :configured,
             "connection" => _conn
           } ->
-            %{exists?: true, ap_mode?: true, connected?: false, name: ""}
+            %{exists?: true, ap_mode?: true, connected?: false, name: "", internet?: false}
 
           %{"config" => %{type: VintageNetWiFi}, "state" => :configured, "connection" => conn}
           when conn in [:lan, :internet] ->
-            %{exists?: true, ap_mode?: false, connected?: true, name: state.ssid}
+            %{exists?: true, ap_mode?: false, connected?: true, name: state.ssid, internet?: conn == :internet}
 
           _ ->
-            %{exists?: true, ap_mode?: false, connected?: false, name: ""}
+            %{exists?: true, ap_mode?: false, connected?: false, name: "", internet?: false}
         end
       end
+
+    wired =
+      state.wired
+      |> Enum.map(fn interface ->
+        case get_status(state.wifi) do
+          %{
+            "connection" => connection,
+          } when connection in [:lan, :internet] ->
+            %{
+              name: interface,
+              status: connection,
+              internet?: connection == :internet
+            }
+          _ ->
+            %{
+              name: interface,
+              status: :not_connected,
+              internet?: false
+            }
+        end
+      end)
+
+    internet? = wifi.connected? or Enum.any?(wired, & &1.internet?)
+
+    status = %{
+      internet?: internet?,
+      wifi: wifi,
+      wired: wired
+    }
 
     {:reply, status, state}
   end
