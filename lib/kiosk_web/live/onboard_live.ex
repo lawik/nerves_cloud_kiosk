@@ -198,7 +198,7 @@ defmodule KioskWeb.OnboardLive do
     {:noreply, assign(socket, connecting_ssid: socket.assigns.selected_ssid, selected_ssid: nil)}
   end
 
-  def handle_event("disconnect-wifi", socket) do
+  def handle_event("disconnect-wifi", _, socket) do
     NetworkManager.disconnect()
     {:noreply, assign(socket, connecting_ssid: nil, selected_ssid: nil)}
   end
