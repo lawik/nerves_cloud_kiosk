@@ -147,7 +147,7 @@ defmodule KioskWeb.OnboardLive do
                 </label>
                 <label class="block flex basis-1/2 gap-4 my-2">
                   <span class="content-center">Serial number</span>
-                  <input class="border-0 rounded-md flex-grow bg-white" type="text" id="nh_identifier" name="nh_identifer" value="" phx-update="ignore" />
+                  <input class="border-0 rounded-md flex-grow bg-white" type="text" id="nh_identifier" name="nh_identifer" value={Nerves.Runtime.serial_number()} phx-update="ignore" />
                 </label>
                 <label class="block flex basis-1/2 gap-4 my-2">
                   <span class="content-center">Product key</span>
