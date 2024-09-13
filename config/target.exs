@@ -60,7 +60,16 @@ config :vintage_net,
     {"wlan0",
      %{
        type: VintageNetWiFi,
-       ipv4: %{method: :dhcp}
+       ipv4: %{method: :dhcp},
+       vintage_net_wifi: %{
+       networks: [
+          %{
+            key_mgmt: :wpa_psk,
+            ssid: "Kontoret",
+            psk: "underjord",
+          }
+        ]
+      }
      }}
   ]
 

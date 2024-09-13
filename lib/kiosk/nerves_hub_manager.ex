@@ -124,6 +124,7 @@ defmodule Kiosk.NervesHubManager do
 
   defp set_application_env(new) do
     config = Application.get_all_env(:nerves_hub_link)
+    config = Keyword.put_new(config, :shared_secret, [])
 
     config =
       @keys
