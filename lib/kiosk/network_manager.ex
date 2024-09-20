@@ -164,6 +164,13 @@ defmodule Kiosk.NetworkManager do
          _metadata,
          %{wifi: wifi} = state
        ) do
+    aps =
+      aps
+      |> Enum.reject(&(String.trim(&1.ssid) == ""))
+      |> Enum.filter(&String.printable?(&1.ssid))
+      |> Enum.sort_by(& &1.signal_percent, :desc)
+      |> Enum.uniq_by(& &1.ssid)
+
     Logger.info("#{wifi}: received APs: #{Enum.map(aps, & &1.ssid)}")
     Phoenix.PubSub.broadcast(Kiosk.PubSub, "network-manager", {:access_points, aps})
     {:noreply, state}
@@ -184,6 +191,7 @@ defmodule Kiosk.NetworkManager do
     Logger.info(
       "VintageNet change: #{inspect(property)} from #{inspect(old_value)} to #{inspect(new_value)} .. #{inspect(metadata)}"
     )
+
     Phoenix.PubSub.broadcast(Kiosk.PubSub, "network-manager", :change)
 
     {:noreply, state}
@@ -213,9 +221,24 @@ defmodule Kiosk.NetworkManager do
           } ->
             %{exists?: true, ap_mode?: true, connected?: false, name: "", internet?: false}
 
-          %{"config" => %{type: VintageNetWiFi}, "state" => :configured, "connection" => conn}
+          %{
+            "config" => %{
+              type: VintageNetWiFi,
+              vintage_net_wifi: %{
+                networks: [%{ssid: ssid} | _]
+              }
+            },
+            "state" => :configured,
+            "connection" => conn
+          }
           when conn in [:lan, :internet] ->
-            %{exists?: true, ap_mode?: false, connected?: true, name: state.ssid, internet?: conn == :internet}
+            %{
+              exists?: true,
+              ap_mode?: false,
+              connected?: true,
+              name: ssid,
+              internet?: conn == :internet
+            }
 
           _ ->
             %{exists?: true, ap_mode?: false, connected?: false, name: "", internet?: false}
@@ -225,15 +248,17 @@ defmodule Kiosk.NetworkManager do
     wired =
       state.wired
       |> Enum.map(fn interface ->
-        case get_status(state.wifi) do
+        case get_status(interface) do
           %{
-            "connection" => connection,
-          } when connection in [:lan, :internet] ->
+            "connection" => connection
+          }
+          when connection in [:lan, :internet] ->
             %{
               name: interface,
               status: connection,
               internet?: connection == :internet
             }
+
           _ ->
             %{
               name: interface,

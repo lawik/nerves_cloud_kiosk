@@ -15,6 +15,7 @@ defmodule KioskWeb.NervesHubStatusLive do
     socket =
       if connected?(socket) do
         Phoenix.PubSub.subscribe(Kiosk.PubSub, "nerves_hub_manager")
+        Kiosk.NetworkManager.subscribe()
 
         socket =
           socket
@@ -34,6 +35,14 @@ defmodule KioskWeb.NervesHubStatusLive do
     socket = assign_info(socket)
 
     refresh(socket)
+    {:noreply, socket}
+  end
+
+  def handle_info(:change, socket) do
+    socket =
+      socket
+      |> assign(network_status: NetworkManager.status())
+
     {:noreply, socket}
   end
 
@@ -62,6 +71,7 @@ defmodule KioskWeb.NervesHubStatusLive do
     |> assign(
       link_status: Kiosk.NervesHubManager.status(),
       # link_status: %{starting?: false, started?: true},
+      network_status: nil,
       status: :idle,
       connected?: false,
       console_active?: false
@@ -78,6 +88,7 @@ defmodule KioskWeb.NervesHubStatusLive do
         # status: {:updating, 33},
         # status: :update_rescheduled,
         connected?: nerves_hub_link_connected?(),
+        network_status: NetworkManager.status() |> IO.inspect(label: "network_status"),
         # connected?: false,
         # connected?: true,
         # console_active?: NervesHubLink.console_active?(),
@@ -87,7 +98,8 @@ defmodule KioskWeb.NervesHubStatusLive do
       socket
     end
   catch
-    _, _ ->
+    e, f ->
+      Logger.error("Some error: #{inspect(e)} #{inspect(f)}")
       socket
   end
 
@@ -172,6 +184,8 @@ defmodule KioskWeb.NervesHubStatusLive do
               <div class="p-4 px-8">A remote service console is active.</div>
           </div>
       <% end %>
+
+      <pre><%= inspect(@network_status, pretty: true) %></pre>
     </div>
     </div>
     """
