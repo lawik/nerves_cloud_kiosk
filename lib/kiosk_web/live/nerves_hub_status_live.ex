@@ -99,7 +99,7 @@ defmodule KioskWeb.NervesHubStatusLive do
     end
   catch
     e, f ->
-      Logger.error("Some error: #{inspect(e)} #{inspect(f)}")
+      #Logger.error("Some error: #{inspect(e)} #{inspect(f)}")
       socket
   end
 
@@ -185,7 +185,7 @@ defmodule KioskWeb.NervesHubStatusLive do
           </div>
       <% end %>
 
-      <pre><%= inspect(@network_status, pretty: true) %></pre>
+      <!--<pre><%= inspect(@network_status, pretty: true) %></pre>-->
     </div>
     </div>
     """
