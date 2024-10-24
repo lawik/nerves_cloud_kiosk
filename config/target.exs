@@ -59,9 +59,18 @@ config :vintage_net,
      }},
     {"wlan0",
      %{
-       type: VintageNetWiFi
+       type: VintageNetWiFi,
+       ipv4: %{method: :dhcp},
+       vintage_net_wifi: %{
+       networks: [
+          %{
+            key_mgmt: :wpa_psk,
+            ssid: "Kontoret",
+            psk: "underjord",
+          }
+        ]
       }
-    }
+     }}
   ]
 
 config :mdns_lite,
@@ -73,7 +82,7 @@ config :mdns_lite,
   # because otherwise any of the devices may respond to nerves.local leading to
   # unpredictable behavior.
 
-  hosts: [:hostname, "zero"],
+  hosts: [:hostname, "kiosk"],
   ttl: 120,
 
   # Advertise the following services over mDNS.

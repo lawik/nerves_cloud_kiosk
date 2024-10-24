@@ -109,10 +109,9 @@ defmodule Kiosk.MixProject do
       {:nerves_hub_link_geo, github: "nervescloud/nerves_hub_link_geo"},
       {:nerves_hub_health, github: "nervescloud/nerves_hub_health"},
       {:nerves_hub_cli, "~> 2.0"},
-      # {:frio_rpi4,
-      #  #path: "../frio_rpi4", runtime: false, nerves: [compile: true], targets: :frio_rpi4},
-      #  path: Path.expand("~/projects/nerves_systems/src/frio_rpi4"), runtime: false, nerves: [compile: true], targets: :frio_rpi4},
-      {:nerves_system_rpi0, "== 1.27.1", runtime: false, targets: :rpi0},
+      {:frio_rpi4,
+       #path: "../frio_rpi4", runtime: false, nerves: [compile: true], targets: :frio_rpi4},
+       path: Path.expand("~/projects/nerves_systems/src/frio_rpi4"), runtime: false, nerves: [compile: true], targets: :frio_rpi4},
       {:muontrap, "~> 1.5"},
       {:nerves_time, "~> 0.4.8"},
       {:nerves_key, "~> 1.2"}
