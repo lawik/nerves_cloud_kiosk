@@ -4,8 +4,7 @@ defmodule KioskWeb.NervesHubStatusLive do
   """
   use KioskWeb, :live_view
 
-  # alias Phoenix.LiveView.JS
-  # import KioskWeb.Gettext
+  alias Kiosk.NetworkManager
   require Logger
 
   @doc """
@@ -15,7 +14,7 @@ defmodule KioskWeb.NervesHubStatusLive do
     socket =
       if connected?(socket) do
         Phoenix.PubSub.subscribe(Kiosk.PubSub, "nerves_hub_manager")
-        Kiosk.NetworkManager.subscribe()
+        NetworkManager.subscribe()
 
         socket =
           socket
@@ -88,7 +87,7 @@ defmodule KioskWeb.NervesHubStatusLive do
         # status: {:updating, 33},
         # status: :update_rescheduled,
         connected?: nerves_hub_link_connected?(),
-        network_status: NetworkManager.status() |> IO.inspect(label: "network_status"),
+        network_status: NetworkManager.status(),
         # connected?: false,
         # connected?: true,
         # console_active?: NervesHubLink.console_active?(),
@@ -153,7 +152,7 @@ defmodule KioskWeb.NervesHubStatusLive do
     ~H"""
     <!-- only show this if something is actually happening -->
     <div id="nerves-hub-status-indicator">
-    <div class="fixed top-2 right-2 text-xs flex gap-1">
+    <div class="fixed top-2 right-2 text-xs flex gap-1 items-center">
       <svg class="w-4" xmlns="http://www.w3.org/2000/svg" x="0" y="0" viewBox="0 0 187.98 152.5" style="enable-background:new 0 0 187.98 152.5" xml:space="preserve"><style>.st0{fill:#33647e}.st1{fill:#42a7c6}.st2{fill:#24272a}.st3{fill:#fff}.st4{fill:#672f25}.st5{fill:#aa2d29}</style><path d="M44.97 0h-36C4.02 0 0 4.02 0 8.97v134.57c0 4.95 4.01 8.97 8.97 8.97h30.01c4.95 0 8.97-4.01 8.97-8.97v-5.39c0-4.95-4.01-8.97-8.97-8.97h-6.69c-4.95 0-8.97-4.01-8.97-8.97V32.29c0-4.95 4.01-8.97 8.97-8.97h6.34c1.89 0 3.73.6 5.26 1.7l83.13 60.19c5.93 4.29 14.23.06 14.23-7.26v-3.83c0-2.83-1.34-5.49-3.6-7.19L50.33 1.78A9.006 9.006 0 0 0 44.97 0z"/><path d="M143.01 152.5h36c4.95 0 8.97-4.01 8.97-8.97V8.97c0-4.95-4.01-8.97-8.97-8.97H149c-4.95 0-8.97 4.01-8.97 8.97v5.39c0 4.95 4.01 8.97 8.97 8.97h6.69c4.95 0 8.97 4.01 8.97 8.97v87.91c0 4.95-4.01 8.97-8.97 8.97h-6.34c-1.89 0-3.73-.6-5.26-1.7l-83.13-60.2c-5.93-4.29-14.23-.06-14.23 7.26v3.83c0 2.83 1.34 5.49 3.6 7.19l87.31 65.17a9.048 9.048 0 0 0 5.37 1.77z"/></svg>
       <%= case @status do %>
         <% {:fwup_error, error} -> %>
@@ -185,7 +184,7 @@ defmodule KioskWeb.NervesHubStatusLive do
           </div>
       <% end %>
 
-      <pre><%= inspect(@network_status, pretty: true) %></pre>
+      <!--<pre><%= inspect(@network_status, pretty: true) %></pre>-->
     </div>
     </div>
     """

@@ -9,7 +9,8 @@ defmodule Kiosk.NervesHubManager do
   def init(opts) do
     state = %{
       started?: false,
-      starting?: false,
+      connected?: false,
+      starting?: true,
       pubsub: Keyword.fetch!(opts, :pubsub)
     }
 
@@ -37,10 +38,16 @@ defmodule Kiosk.NervesHubManager do
     GenServer.call(__MODULE__, :remove_credentials)
   end
 
+  def subscribe do
+    status = status()
+    Phoenix.PubSub.subscribe(status.pubsub, "nerves_hub_manager")
+  end
+
   def handle_continue(:start, state) do
     case Application.ensure_all_started(:nerves_hub_link) do
       {:ok, _apps} ->
         Phoenix.PubSub.broadcast(state.pubsub, "nerves_hub_manager", {:link, :started})
+        check_status(1)
         {:noreply, %{state | started?: true, starting?: false}}
 
       {:error, {:nerves_hub_link, _}} ->
@@ -56,8 +63,11 @@ defmodule Kiosk.NervesHubManager do
     # Temporarily set the new config
     set_application_env(new)
 
+    Application.stop(:nerves_hub_link)
+
     case Application.ensure_all_started(:nerves_hub_link) do
       {:ok, _apps} ->
+        NervesHubLink.reconnect()
         # Persist the new config
         write_prop_table(new)
         Phoenix.PubSub.broadcast(state.pubsub, "nerves_hub_manager", {:link, :started})
@@ -72,7 +82,7 @@ defmodule Kiosk.NervesHubManager do
   end
 
   def handle_call(:status, _from, state) do
-    {:reply, Map.take(state, [:starting?, :started?]), state}
+    {:reply, state, state}
   end
 
   def handle_call(:start, _from, state) do
@@ -106,6 +116,18 @@ defmodule Kiosk.NervesHubManager do
     {:reply, :ok, %{state | started?: false, starting?: false}}
   end
 
+  def handle_info(:check, state) do
+    check_status()
+
+    if not is_nil(Process.whereis(NervesHubLink.Socket)) and NervesHubLink.connected?() do
+      Phoenix.PubSub.broadcast(state.pubsub, "nerves_hub_manager", {:link, :connected})
+      {:noreply, %{state | connected?: true}}
+    else
+      Phoenix.PubSub.broadcast(state.pubsub, "nerves_hub_manager", {:link, :not_connected})
+      {:noreply, %{state | connected?: false}}
+    end
+  end
+
   defp get_prop_table do
     PropertyTable.get_all(Kiosk.NervesHub) |> Map.new()
   end
@@ -113,6 +135,10 @@ defmodule Kiosk.NervesHubManager do
   defp write_prop_table(new) do
     PropertyTable.put_many(Kiosk.NervesHub, Enum.to_list(new))
     PropertyTable.flush_to_disk(Kiosk.NervesHub)
+  end
+
+  defp check_status(delay \\ 5000) do
+    Process.send_after(self(), :check, delay)
   end
 
   @keys %{

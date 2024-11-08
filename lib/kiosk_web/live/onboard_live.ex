@@ -2,6 +2,7 @@ defmodule KioskWeb.OnboardLive do
   use KioskWeb, :live_view
 
   alias Kiosk.NetworkManager
+  alias Kiosk.NervesHubManager
 
   require Logger
 
@@ -88,9 +89,6 @@ defmodule KioskWeb.OnboardLive do
 
   def render(assigns) do
     ~H"""
-    <!--<h1 class="text-6xl text-center uppercase mb-12">Welcome</h1>-->
-
-    <!-- <pre><%= inspect(assigns, pretty: true) %></pre> -->
     <div id="internet-status">
       <div class="flex gap-4">
       <%= if @status.internet? do %>
@@ -126,6 +124,9 @@ defmodule KioskWeb.OnboardLive do
         <div class="flex-grow">
           <div class="">
             <h2 class="text-lg font-bold text-lime-600">NervesHub link ready</h2>
+          </div>
+          <div id="nerveshub-disconnect-button" :if={@status.wifi.connected?} class="mt-4 flex justify-end">
+            <button class="rounded-md bg-lime-600 text-white px-4 py-2 basis-1/2">Disconnect</button>
           </div>
         </div>
       </div>
@@ -179,7 +180,7 @@ defmodule KioskWeb.OnboardLive do
         params,
         socket
       ) do
-    Kiosk.NervesHubManager.start(params)
+    NervesHubManager.start(params)
     {:noreply, socket}
   end
 
@@ -230,6 +231,14 @@ defmodule KioskWeb.OnboardLive do
     {:noreply, socket}
   end
 
+  def handle_info({:link, _}, socket) do
+    socket =
+      socket
+      |> assign_connection()
+
+    {:noreply, socket}
+  end
+
   def handle_info({:access_points, aps}, socket) do
     {:noreply, assign(socket, access_points: aps)}
   end
@@ -251,13 +260,16 @@ defmodule KioskWeb.OnboardLive do
   end
 
   defp assign_connection(socket) do
+    %{connected?: connected?} = NervesHubManager.status()
+    status = NetworkManager.status()
+
     socket
     |> assign(
-      status: NetworkManager.status(),
+      status: status,
       # wifi: %{exists?: true, connected?: true, name: "My network", ap_mode?: false},
       # internet?: true,
       ips: NetworkManager.get_ips(),
-      link_set_up?: Kiosk.NervesHubManager.status().started?
+      link_set_up?: connected?
     )
   end
 end

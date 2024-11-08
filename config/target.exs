@@ -62,14 +62,14 @@ config :vintage_net,
        type: VintageNetWiFi,
        ipv4: %{method: :dhcp},
        vintage_net_wifi: %{
-       networks: [
-          %{
-            key_mgmt: :wpa_psk,
-            ssid: "Kontoret",
-            psk: "underjord",
-          }
-        ]
-      }
+         networks: [
+           %{
+             key_mgmt: :wpa_psk,
+             ssid: "Kontoret",
+             psk: "underjord"
+           }
+         ]
+       }
      }}
   ]
 
@@ -133,4 +133,4 @@ config :nerves_hub_link,
 # of this file so it overrides the configuration defined above.
 # Uncomment to use target specific configurations
 
-# import_config "#{Mix.target()}.exs"
+import_config "#{Mix.target()}.exs"

@@ -83,3 +83,6 @@ config :nerves_hub_link,
 
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
+
+config :kiosk,
+  enable_software_keyboard: false
