@@ -102,11 +102,10 @@ defmodule KioskWeb.OnboardLive do
 
   def render(assigns) do
     ~H"""
-    <div><%= @speaking? %></div>
-    <div :if={@speaking?} id="speech-indicator" class="absolute top-0 left-0 right-0 h-full pointer-events-none" style="background-image: radial-gradient(transparent 50%, rgba(100, 255, 255, 0.2))" />
-    <div id="amplitude" class="absolute z-10 left-0 top-[25vh] h-[50vh] overflow-hidden w-full flex items-center">
-      <div :for={amp <- @amps} class="flex-grow bg-slate-200" style={"height: #{amp}%"}></div>
+    <div id="amplitude" class="absolute z-10 top-0 left-0 h-screen overflow-hidden w-full flex items-center">
+      <div :for={amp <- @amps} class="flex-grow bg-slate-100" style={"height: #{amp}%"}></div>
     </div>
+    <div id="speech-indicator" class="absolute z-30 top-0 left-0 right-0 h-full pointer-events-none transition duration-500" style={"opacity: #{if @speaking? do 1 else 0 end};background-image: radial-gradient(rgba(100, 255, 255, 0) 50%, rgba(100, 255, 255, 1))"} />
     <div class="relative z-20">
     <div id="internet-status">
       <div class="flex gap-4">
