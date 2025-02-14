@@ -117,6 +117,14 @@ defmodule Kiosk.MixProject do
         nerves: [compile: true],
         targets: :frio_rpi4
       },
+      {:ortex, "~> 0.1.10"},
+      {:nx, "~> 0.9.2"},
+      {:membrane_core, "~> 1.0"},
+      {:membrane_file_plugin, "~> 0.17.0"},
+      {:membrane_portaudio_plugin, "~> 0.19.2"},
+      {:membrane_ffmpeg_swresample_plugin, "~> 0.20.2"},
+      {:membrane_audiometer_plugin, "~> 0.12.0"},
+      {:membrane_fake_plugin, "~> 0.11"},
       {:muontrap, "~> 1.5"},
       {:nerves_time, "~> 0.4.8"},
       {:nerves_key, "~> 1.2"}

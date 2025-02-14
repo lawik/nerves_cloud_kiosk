@@ -5,10 +5,15 @@ defmodule KioskWeb.OnboardLive do
   alias Kiosk.NervesHubManager
 
   require Logger
+  @floor_db -80
+  @ceil_db 0
+  @amps Enum.map(1..100, fn _ -> 0 end)
 
   def mount(_, _, socket) do
     if connected?(socket) do
       NetworkManager.subscribe()
+      Phoenix.PubSub.subscribe(Kiosk.PubSub, "amplitude")
+      Phoenix.PubSub.subscribe(Kiosk.PubSub, "speaking")
 
       socket =
         socket
@@ -17,7 +22,11 @@ defmodule KioskWeb.OnboardLive do
           selected_ssid: nil,
           connecting_ssid: nil,
           hostname: hostname(),
-          ips: []
+          ips: [],
+          speaking?: false,
+          min_amp: @floor_db,
+          max_amp: @ceil_db,
+          amps: @amps
         )
         |> assign_connection()
 
@@ -35,7 +44,11 @@ defmodule KioskWeb.OnboardLive do
           selected_ssid: nil,
           connecting_ssid: nil,
           hostname: nil,
-          ips: []
+          ips: [],
+          speaking?: false,
+          min_amp: 0,
+          max_amp: 1,
+          amps: @amps
         )
         |> assign_connection()
 
@@ -89,6 +102,12 @@ defmodule KioskWeb.OnboardLive do
 
   def render(assigns) do
     ~H"""
+    <div><%= @speaking? %></div>
+    <div :if={@speaking?} id="speech-indicator" class="absolute top-0 left-0 right-0 h-full pointer-events-none" style="background-image: radial-gradient(transparent 50%, rgba(100, 255, 255, 0.2))" />
+    <div id="amplitude" class="absolute z-10 left-0 top-[25vh] h-[50vh] overflow-hidden w-full flex items-center">
+      <div :for={amp <- @amps} class="flex-grow bg-slate-200" style={"height: #{amp}%"}></div>
+    </div>
+    <div class="relative z-20">
     <div id="internet-status">
       <div class="flex gap-4">
       <%= if @status.internet? do %>
@@ -167,11 +186,11 @@ defmodule KioskWeb.OnboardLive do
       </div>
       <% end %>
     </div>
+    </div>
 
     <div id="hostname-container" :if={@hostname} class="fixed bottom-2 left-2">
     Device: <%= @hostname %>.local<br>
     </div>
-
     """
   end
 
@@ -245,6 +264,21 @@ defmodule KioskWeb.OnboardLive do
 
   def handle_info({:connection_failed, _ssid}, socket) do
     {:noreply, assign(socket, connecting_ssid: nil)}
+  end
+
+  @percentage -80 / 100
+  def handle_info({:amp, amp}, socket) when is_float(amp) do
+    percent = 100 - amp * @percentage
+    amps = Enum.take([round(percent) | socket.assigns.amps], 100)
+    {:noreply, assign(socket, amps: amps)}
+  end
+
+  def handle_info({:speaking, :start, _prob}, socket) do
+    {:noreply, assign(socket, speaking?: true)}
+  end
+
+  def handle_info({:speaking, :stop, _prob}, socket) do
+    {:noreply, assign(socket, speaking?: false)}
   end
 
   def handle_info(_, socket) do

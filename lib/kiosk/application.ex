@@ -39,7 +39,8 @@ defmodule Kiosk.Application do
         # Start a worker by calling: Kiosk.Worker.start_link(arg)
         # {Kiosk.Worker, arg},
         # Start to serve requests, typically the last entry
-        KioskWeb.Endpoint
+        KioskWeb.Endpoint,
+        {Kiosk.Audio.Pipeline, []}
       ] ++ children(target())
 
     Supervisor.start_link(children, opts)

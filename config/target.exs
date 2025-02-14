@@ -133,4 +133,12 @@ config :nerves_hub_link,
 # of this file so it overrides the configuration defined above.
 # Uncomment to use target specific configurations
 
+config :ortex, Ortex.Native,
+  target: "aarch64-unknown-linux-gnu",
+  env: [
+    {"CC", ""},
+    {"CFLAGS", ""},
+    {"CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER", "aarch64-nerves-linux-gnu-gcc"}
+  ]
+
 import_config "#{Mix.target()}.exs"
