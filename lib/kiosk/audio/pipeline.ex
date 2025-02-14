@@ -96,6 +96,7 @@ defmodule Kiosk.Audio.Pipeline do
     {[], state}
   end
 
+  @impl true
   def handle_tick(:frame, _ctx, state) do
     if state.amps != [] do
       avg = Enum.sum(state.amps) / Enum.count(state.amps)

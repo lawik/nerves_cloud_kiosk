@@ -59,7 +59,8 @@ defmodule Kiosk.Application do
     port = config[:http][:port]
 
     [
-      {Kiosk, dir: "/data", starting_page: "http://#{host}:#{port}"}
+      {Kiosk, dir: "/data", starting_page: "http://#{host}:#{port}"},
+      Kiosk.Hardwarer
     ]
   end
 
